@@ -1,0 +1,129 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package helpdesk;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+/**
+ *
+ * @author User
+ */
+public class Main {
+
+    static ArrayList<Customer> customers = new ArrayList<>();
+    static ArrayList<Ticket> tickets = new ArrayList<>();
+    static Customer loggedInCustomer = null;
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+        int choice;
+
+        do {
+            System.out.println("\n=== IT Helpdesk System ===");
+            System.out.println("1. Register");
+            System.out.println("2. Login");
+            System.out.println("3. Submit Ticket");
+            System.out.println("4. View My Tickets");
+            System.out.println("5. Close Ticket");
+            System.out.println("6. Exit");
+            System.out.print("Choose: ");
+            choice = sc.nextInt();
+            sc.nextLine();
+
+            switch (choice) {
+
+                case 1:
+                    System.out.print("Username: ");
+                    String user = sc.nextLine();
+                    System.out.print("Password: ");
+                    String pass = sc.nextLine();
+
+                    customers.add(new Customer(user, pass));
+                    System.out.println("Registered!");
+                    break;
+
+                case 2:
+                    System.out.print("Username: ");
+                    String u = sc.nextLine();
+                    System.out.print("Password: ");
+                    String p = sc.nextLine();
+
+                    boolean found = false;
+
+                    for (Customer c : customers) {
+                        if (c.login(u, p)) {
+                            loggedInCustomer = c;
+                            System.out.println("Login successful!");
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        System.out.println("Login failed");
+                    }
+                    break;
+
+                case 3:
+                    if (loggedInCustomer == null) {
+                        System.out.println("Please login first!");
+                        break;
+                    }
+
+                    System.out.print("Enter issue: ");
+                    String issue = sc.nextLine();
+
+                    System.out.print("Priority (Low/Medium/High): ");
+                    String priority = sc.nextLine();
+
+                    tickets.add(new Ticket(issue, priority, loggedInCustomer.getCustomerID()));
+                    System.out.println("Ticket submitted!");
+                    break;
+
+                case 4:
+                    if (loggedInCustomer == null) {
+                        System.out.println("Please login first!");
+                        break;
+                    }
+
+                    for (Ticket t : tickets) {
+                        if (t.getCustomerID() == loggedInCustomer.getCustomerID()) {
+                            t.display();
+                            System.out.println("----------------");
+                        }
+                    }
+                    break;
+
+                case 5:
+                    if (loggedInCustomer == null) {
+                        System.out.println("Please login first!");
+                        break;
+                    }
+
+                    System.out.print("Enter Ticket ID to close: ");
+                    int id = sc.nextInt();
+
+                    for (Ticket t : tickets) {
+                        if (t.getTicketID() == id &&
+                            t.getCustomerID() == loggedInCustomer.getCustomerID()) {
+
+                            t.closeTicket();
+                            System.out.println("Ticket closed!");
+                        }
+                    }
+                    break;
+
+                case 6:
+                    System.out.println("Exiting...");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice");
+            }
+
+        } while (choice != 6);
+    }
+}
