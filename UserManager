@@ -1,0 +1,111 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.managermodule;
+
+import java.util.ArrayList;
+
+/**
+ *
+ * @author user
+ */
+public class UserManager {
+    /**Store multiple User objects in memory
+     * ArrayList dynamic: can delete or add by manager
+     */
+    private ArrayList<User> userList;
+    private ArrayList<Ticket> ticketList;
+    
+    public UserManager() {
+        this.userList = new ArrayList<>();
+        this.ticketList = new ArrayList<>();
+    }
+    
+    public void setUserList(ArrayList<User> userList) { this.userList = userList; }
+    public void setTicketList(ArrayList<Ticket> ticketList) { this.ticketList = ticketList; }
+    
+    public ArrayList<Ticket> getTicketList() {return this.ticketList;}
+    public ArrayList<User> getUserList() { return this.userList; }
+
+    // ==========User Management==========
+    
+    // Add new user to the list after checking for duplicates
+    public void addUser(User newUser) {
+        // Check if the ID is already "INVALID"
+        if (newUser.getUserId().equals("INVALID_ID")) {
+            System.out.println("[Error] Cannot add user: Data is invalid.");
+            return;
+        }
+        // Add new User to array
+        userList.add(newUser);
+        System.out.println("[Success] User " + newUser.getUsername() + " added.");
+    }
+    
+    // Find user by their unique ID.
+    public User findUserById(String id) {
+        // use for loop to compare id one by one
+        for (User u : userList) {
+            if (u.getUserId().equalsIgnoreCase(id)) {
+                return u; // Return the object if found
+            }
+        }
+        return null; // Not found 
+    }
+    
+    // Deactivate a user (Change isActive to false), cannnot login
+    public void deactivateUser(String id) {
+        User u = findUserById(id);
+        // Proceed deactivate if the user was actually found
+        if (u != null) {
+            u.setActive(false); // "inactive"
+            System.out.println("[Update] User ID " + id + " has been deactivated.");
+        } else {
+            System.out.println("[Error] User ID not found.");
+        }
+    }
+    
+    public boolean deleteUser(String id) {
+        User u = findUserById(id);
+        if (u != null) {
+            userList.remove(u);
+            return true;
+        }
+        return false;
+    }
+    // Filter and display users in a table format.
+    public void displayUsersByRole(String roleFilter) {
+        System.out.println("\n" + "=".repeat(65));
+        System.out.printf("%-12s | %-15s | %-30s | %-10s | %-10s\n", "ID", "Username", "Email", "Role", "Status");
+        System.out.println("-".repeat(65));
+
+        for (User u : userList) {
+
+            if (roleFilter.equalsIgnoreCase("All") || u.getRole().equalsIgnoreCase(roleFilter)) {
+                String status = u.isActive() ? "ACTIVE" : "DISABLED";
+                System.out.printf("%-12s | %-15s | %-30s | %-10s | %-10s\n", 
+                                  u.getUserId(), u.getUsername(), u.getEmail(), u.getRole(), status);
+            }
+        }
+        System.out.println("=".repeat(65));
+    }
+
+    // Manager login validation
+    public boolean loginAsManager(String username, String password) {
+        // Search for the user in the list
+        for (User u : userList) {
+            if (u.getUsername().equals(username)) {
+                // Execute manager-specific validation
+                return u.validateManagerLogin(username, password);
+            }
+        }
+        System.out.println("[Error] User not found.");
+        return false;
+    }
+}
+
+
+    
+   
+    
+          
