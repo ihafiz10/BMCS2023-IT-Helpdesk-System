@@ -1,0 +1,53 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package helpdesk;
+import java.time.LocalDate;
+
+/**
+ *
+ * @author User
+ */
+public class Ticket {
+    private int ticketID;
+    private String issue;
+    private String priority;
+    private String status;
+    private String response;
+    private LocalDate date;
+    private int customerID;
+
+    private static int counter = 1001;
+
+    public Ticket(String issue, String priority, int customerID) {
+        this.ticketID = counter++;
+        this.issue = issue;
+        this.priority = priority;
+        this.status = "Open";
+        this.response = "No response yet";
+        this.date = LocalDate.now();
+        this.customerID = customerID;
+    }
+
+    public int getTicketID() {
+        return ticketID;
+    }
+
+    public int getCustomerID() {
+        return customerID;
+    }
+
+    public void closeTicket() {
+        this.status = "Closed";
+    }
+
+    public void display() {
+        System.out.println("Ticket ID: " + ticketID);
+        System.out.println("Issue: " + issue);
+        System.out.println("Priority: " + priority);
+        System.out.println("Status: " + status);
+        System.out.println("Response: " + response);
+        System.out.println("Date: " + date);
+    }
+}
