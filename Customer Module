@@ -1,1 +1,16 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ */
 
+package com.mycompany.customermodulev7;
+
+/**
+ *
+ * @author User
+ */
+public class CustomerModuleV7 {
+
+    public static void main(String[] args) {
+        System.out.println("Welcome To It Helpdesk System");
+    }
+}
