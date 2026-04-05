@@ -1,76 +1,85 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.assignment;
+
+/**
+ *
+ * @author User
+ */
+import java.util.ArrayList;
+
 public class Ticket {
-    private String ticketId;
-    private String customerId;
-    private String assignedStaffId;
+    private String ticketID;
     private String description;
     private String priority;
     private String status;
-    private String response;
     private String dateSubmitted;
+    private ArrayList<String> responses;
 
-    public Ticket(String ticketId, String customerId, String description, String priority, String dateSubmitted) {
-        if (ticketId == null || ticketId.isEmpty()) {
-            throw new IllegalArgumentException("Ticket ID cannot be empty");
-        }
-        if (customerId == null || customerId.isEmpty()) {
-            throw new IllegalArgumentException("Customer ID cannot be empty");
-        }
-        if (description == null || description.isEmpty()) {
-            throw new IllegalArgumentException("Description cannot be empty");
-        }
-
-        this.ticketId = ticketId;
-        this.customerId = customerId;
+    public Ticket(String ticketID, String description, String priority) {
+        this.ticketID = ticketID;
         this.description = description;
         this.priority = priority;
         this.status = "Open";
-        this.response = "";
-        this.assignedStaffId = "Not Assigned";
-        this.dateSubmitted = dateSubmitted;
+        this.dateSubmitted = "Today";
+        responses = new ArrayList<>();
     }
 
-    public String getTicketId() { return ticketId; }
-    public String getCustomerId() { return customerId; }
-    public String getAssignedStaffId() { return assignedStaffId; }
-    public String getDescription() { return description; }
-    public String getPriority() { return priority; }
-    public String getStatus() { return status; }
-    public String getResponse() { return response; }
-    public String getDateSubmitted() { return dateSubmitted; }
+    public String getTicketID() {
+        return ticketID;
+    }
 
-    public void setAssignedStaffId(String assignedStaffId) {
-        if (assignedStaffId == null || assignedStaffId.isEmpty()) {
-            System.out.println("Invalid staff ID.");
-            return;
+    public String getStatus() {
+        return status;
+    }
+
+    public boolean updateStatus(String newStatus) {
+        if (newStatus == null || newStatus.isEmpty()) {
+            System.out.println("Status cannot be empty");
+            return false;
         }
-        this.assignedStaffId = assignedStaffId;
-    }
 
-    public void setStatus(String status) {
-        if (status == null || status.isEmpty()) {
-            System.out.println("Invalid status.");
-            return;
+        if (!newStatus.equalsIgnoreCase("Open") &&
+            !newStatus.equalsIgnoreCase("In Progress") &&
+            !newStatus.equalsIgnoreCase("Resolved") &&
+            !newStatus.equalsIgnoreCase("Closed")) {
+
+            System.out.println("Invalid status!");
+            return false;
         }
-        this.status = status;
-    }
 
-    public void setResponse(String response) {
-        if (response == null || response.isEmpty()) {
-            System.out.println("Response cannot be empty.");
-            return;
+        if (this.status.equalsIgnoreCase("Closed")) {
+            System.out.println("Cannot update a closed ticket!");
+            return false;
         }
-        this.response = response;
+
+        this.status = newStatus;
+        return true;
     }
 
-    @Override
+    public boolean addResponse(String response) {
+        if (response == null || response.trim().isEmpty()) {
+            System.out.println("Response cannot be empty!");
+            return false;
+        }
+
+        responses.add(response);
+        return true;
+    }
+
+    public void viewHistory() {
+        if (responses.isEmpty()) {
+            System.out.println("No responses yet.");
+        } else {
+            for (String r : responses) {
+                System.out.println("- " + r);
+            }
+        }
+    }
+
     public String toString() {
-        return "Ticket ID: " + ticketId +
-                "\nCustomer ID: " + customerId +
-                "\nAssigned Staff ID: " + assignedStaffId +
-                "\nDescription: " + description +
-                "\nPriority: " + priority +
-                "\nStatus: " + status +
-                "\nResponse: " + (response.isEmpty() ? "No response yet" : response) +
-                "\nDate Submitted: " + dateSubmitted;
+        return ticketID + " | " + description + " | " + priority + " | " + status;
     }
 }
