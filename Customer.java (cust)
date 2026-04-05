@@ -1,0 +1,23 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package helpdesk;
+
+/**
+ *
+ * @author User
+ */
+public class Customer extends User {
+    private int customerID;
+    private static int counter = 1;
+
+    public Customer(String username, String password) {
+        super(username, password);
+        this.customerID = counter++;
+    }
+
+    public int getCustomerID() {
+        return customerID;
+    }  
+}
