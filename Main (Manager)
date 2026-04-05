@@ -1,0 +1,242 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+ */
+package com.mycompany.managermodule;
+
+import java.util.Scanner;
+
+public class Main {
+    
+    public static void pause(Scanner scanner) {
+    System.out.println("\nPress Enter to return to the Manager Dashboard...");
+    scanner.nextLine();
+      
+}
+    
+  public static void clearScreen() {
+    // Print 30 to 50 empty lines
+    for (int i = 0; i <= 30; i++) {
+        System.out.println();
+    }
+    System.out.println("==========================================");
+}
+    
+    public static void main(String[] args) {
+        // Initialize all Modules
+        DataRepository repo = new DataRepository();
+        UserManager userMgr = new UserManager();
+        TicketManager ticketMgr = new TicketManager();
+        Scanner input = new Scanner(System.in);
+        
+        // Load existing data from text files
+        userMgr.setUserList(repo.loadUsersFromFile());
+        ticketMgr.setTicketList(repo.loadTicketsFromFile());
+        // Find "Available Staff"
+        ticketMgr.setUserList(userMgr.getUserList());
+        
+        // Initial Admin Check
+        if (userMgr.getUserList().isEmpty()) {
+            System.out.println("[Init] System is empty. Creating initial Manager...");
+            Manager admin = new Manager("MGR1234567", "Krystal", "krystal@gmail.com", "Krystal123", true, "2026-04-05", "IT Dept");
+            userMgr.addUser(admin);
+            repo.saveUsersToFile(userMgr.getUserList()); // Save through Repo
+        }
+        
+        // Login Process
+        System.out.println("=== IT Support System: Manager Portal ===");
+        System.out.print("Enter Username: ");
+        String inputUser = input.nextLine();
+        System.out.print("Enter Password: ");
+        String inputPass = input.nextLine();
+
+
+        // Validate Manager Identity
+        if (userMgr.loginAsManager(inputUser, inputPass)) {
+        // Get the manager object from the list after successful login
+            User currentUser = userMgr.findUserById(inputUser);
+
+            // Display Manager Dashboard
+            if (currentUser instanceof Manager manager) {
+            boolean exit = false;
+            while (!exit) {
+                clearScreen();
+                manager.displayManagerDashboard();
+                System.out.println("6. Logout"); 
+                System.out.print("Please enter your choice (1-6): ");
+                String choice = input.nextLine(); 
+
+        
+        switch (choice) {
+            case "1" -> {
+                ticketMgr.monitorTicketStatus();
+                pause(input);
+                    }
+            case "2" -> {
+                System.out.print("Enter Ticket ID to assign: ");
+                String tid = input.nextLine();
+                Ticket foundTicket = ticketMgr.findTicketById(tid);
+                if (foundTicket == null) {
+                    System.out.println("[Error] Ticket ID " + tid + " does not exist in the system!");
+                    pause(input);
+                } else {
+                    //If exists, find staff
+                    String staffId = ticketMgr.getMostAvailableStaff();
+                    manager.assignTicket(tid, staffId); 
+                    foundTicket.setStaffId(staffId);
+                    foundTicket.setStatus("In Progress");
+                    System.out.println("[Success] Ticket " + tid + " is now linked to " + staffId);
+                    repo.saveTicketsToFile(userMgr.getTicketList());
+                    pause(input);
+                    }
+            }
+            case "3" -> {
+                ticketMgr.viewAllFeedback(); 
+                pause(input);
+                    }
+            case "4" -> {
+                System.out.print("Enter Year (e.g. 2026): ");
+                int y = Integer.parseInt(input.nextLine());
+                System.out.print("Enter Month (1-12): ");
+                int m = Integer.parseInt(input.nextLine());
+                ticketMgr.generateMonthlyTicketReport(y, m); 
+                pause(input);
+            }
+            case "5" -> {
+                clearScreen();
+                System.out.println("======= USER DIRECTORY =======");
+                System.out.println(" 1. View Customers Only");
+                System.out.println(" 2. View Staff Only");
+                System.out.println(" 3. View Managers Only");
+                System.out.print("Choose category (1-3): ");
+                String viewChoice = input.nextLine();
+                
+                // 执行分类显示
+                switch (viewChoice) {
+                    case "1" -> userMgr.displayUsersByRole("Customer");
+                    case "2" -> userMgr.displayUsersByRole("Staff");
+                    case "3" -> userMgr.displayUsersByRole("Manager");
+                }
+                
+                System.out.println("\n[ COMMANDS ]");
+                System.out.println(" (a) Add New User");
+                System.out.println(" (b) Deactivate User");
+                System.out.println(" (c) Delete User");
+                System.out.println(" (d) Back to Main Menu");
+                System.out.print("\nSelect Action (a-d): ");
+                String subChoice = input.nextLine().toLowerCase();
+                
+                switch (subChoice) {
+                    case "a" -> {
+                        System.out.println("\n--- Create New Account ---");
+                        String nRole;
+                    switch (viewChoice) {
+                        case "1" -> {
+                            nRole = "Customer";
+                            System.out.println("[System] Creating a new CUSTOMER account...");
+                        }
+                        case "2" -> {
+                            nRole = "Staff";
+                            System.out.println("[System] Creating a new STAFF account...");
+                        }
+                        case "3" -> {
+                            nRole = "Manager";
+                            System.out.println("[System] Creating a new MANAGER account...");
+                        }
+                        default -> {
+                            System.out.println("Select Role (1.Customer  2.Staff  3.Manager): ");
+                            String rc = input.nextLine();
+                            nRole = switch (rc) {
+                                case "2" -> "Staff";
+                                case "3" -> "Manager";
+                                default  -> "Customer";
+                            };
+                        }
+                    }
+                        
+                        System.out.print("New ID (Min 9 chars): "); String nid = input.nextLine();
+                        System.out.print("Name (Min 6 chars, no space): "); String nName = input.nextLine();
+                        System.out.print("Email (e.g. abc123@example.com): "); String nEmail = input.nextLine();
+                        System.out.print("Password (Min 9 chars): "); String nPwd = input.nextLine();
+                  
+                        if (nName.length() < 6 || nName.contains(" ")) {
+                            System.out.println("[Error] Username must be at least 6 characters and NOT contain spaces!");
+                        } else if (nid.length() < 9) {
+                            System.out.println("[Error] ID must be at least 9 characters!");
+                        } else {
+       
+                            User newUser;
+                            if (nRole.equalsIgnoreCase("Manager")) {
+                                newUser = new Manager(nid, nName, nEmail, nPwd, true, "2026-04-05", "IT Dept");
+                            } else {
+                                newUser = new Staff(nid, nName, nEmail, nPwd, nRole, true, "2026-04-05", "Support");
+                            }
+               
+                            if (newUser.getUsername().equals("INVALID_USERNAME") || newUser.getUserId().equals("INVALID_ID")) {
+                                System.out.println("[Error] Account creation failed due to invalid format inside User class.");
+                                pause(input);
+                            } else {
+                                userMgr.addUser(newUser);
+                                repo.saveUsersToFile(userMgr.getUserList());
+                                System.out.println("[Success] Account created for: " + nName);
+                                pause(input);
+                            }
+                        }
+                    } // Case a 结束
+                    
+                    case "b" -> {
+                        System.out.print("\nEnter ID to Deactivate: ");
+                        String dId = input.nextLine();
+                        if (!dId.equals(manager.getUserId())) {
+                            userMgr.deactivateUser(dId);
+                            repo.saveUsersToFile(userMgr.getUserList());
+                            System.out.println("[Status] ID " + dId + " has been disabled.");
+                            pause(input);
+                        } else {
+                            System.out.println("[Error] Safety Lock: Cannot disable yourself!");
+                            pause(input);
+                        }
+                    }
+                    
+                    case "c" -> {
+                        System.out.print("\nEnter ID to Delete Permanently: ");
+                        String delId = input.nextLine();
+                        if (userMgr.deleteUser(delId)) {
+                            repo.saveUsersToFile(userMgr.getUserList());
+                            System.out.println("[Success] User removed.");
+                            pause(input);
+                        } else {
+                            System.out.println("[Error] ID not found.");
+                            pause(input);
+                        }
+                    }
+                    
+                    case "d" -> System.out.println("Returning to main menu...");
+                    
+                    default -> {System.out.println("Invalid action code.");
+                    pause(input);}
+                }     
+            }
+  
+          case "6" -> {
+                            exit = true; 
+                            System.out.println("Logging out... Goodbye!");
+                        }
+                        default -> System.out.println("Invalid choice, please try again.");
+                    } 
+                } 
+            } 
+            
+ 
+            repo.saveTicketsToFile(userMgr.getTicketList());
+            repo.saveUsersToFile(userMgr.getUserList());
+            
+        } else {
+            System.out.println("Login Failed. Access Denied.");
+        }
+
+   
+        input.close();
+        System.out.println("[System] Application Closed.");
+    }
+}
