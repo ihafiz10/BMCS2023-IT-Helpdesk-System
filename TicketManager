@@ -1,0 +1,234 @@
+package com.mycompany.managermodule;
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+
+/**
+ *
+ * @author user
+ */
+
+import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.Duration;
+
+public class TicketManager {
+    
+    private ArrayList<Ticket> ticketList;
+    private ArrayList<User> userList;
+
+    public TicketManager() {
+        this.ticketList = new ArrayList<>();
+        this.userList = new ArrayList<>();
+    }
+    
+    public void setTicketList(ArrayList<Ticket> ticketList) { this.ticketList = ticketList; }
+    public void setUserList(ArrayList<User> userList) { this.userList = userList; }
+    
+    // ======== Tickets Logic ========
+    public Ticket findTicketById(String ticketId) {
+        for (Ticket t : ticketList) {
+            if (t.getTicketId().equalsIgnoreCase(ticketId)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    //Find a staff member with the least number of active tickets.
+    public String getMostAvailableStaff() {
+        String bestStaff = "NONE";
+        int minTickets = Integer.MAX_VALUE;
+    
+        for (User u : userList) {
+            if (u.getRole().equalsIgnoreCase("Staff") && u.isActive()) {
+                int currentWorkload = 0;
+                for (Ticket t : ticketList) {
+                    if (t.getStaffId() != null && t.getStaffId().equals(u.getUserId()) 
+                    && !t.getStatus().equalsIgnoreCase("Resolved")) {
+                    currentWorkload++;
+                }
+            }
+                if (currentWorkload < minTickets) {
+                minTickets = currentWorkload;
+                bestStaff = u.getUserId();
+            }
+        }
+    }
+    return bestStaff;
+}
+    // Identify High Priority tickets that are not resolved.
+    public void identifyCriticalTickets() {
+        System.out.println("\n!!! CRITICAL TICKETS REQUIRING ATTENTION !!!");
+        boolean found = false;
+        LocalDateTime now = LocalDateTime.now();
+        
+            for (Ticket t : ticketList) {
+                boolean isHighPriority = t.getPriority().equalsIgnoreCase("High");
+                boolean isNotResolved = !t.getStatus().equalsIgnoreCase("Resolved");
+                
+                Duration duration = Duration.between(t.getCreationTime(), now);
+                boolean isOverdue = duration.toHours() >= 24;
+
+            if (isNotResolved && (isHighPriority || isOverdue)) {
+                String reason = isOverdue ? "OVERDUE (>24h)" : "HIGH PRIORITY";
+                System.out.println("-> [ALERT] Ticket: " + t.getTicketId() + " | Reason: " + reason + " | Status: " + t.getStatus());
+                found = true;
+            }
+        }
+
+        if (!found) {
+            System.out.println("No critical tickets found. System is stable.");
+        }
+        System.out.println("--------------------------------------------\n");
+    }
+
+    // =========== Report ===========
+    public void monitorTicketStatus() {
+        int pending = 0;
+        int inProgress = 0;
+        int resolved = 0;
+
+        for (Ticket t : ticketList) {
+            // Use switch-case for cleaner multi-condition checks
+            switch (t.getStatus().toLowerCase()) {
+                case "pending" -> pending++;
+                case "in progress" -> inProgress++;
+                case "resolved" -> resolved++;
+            }
+        }
+       System.out.println("\n========= TICKET MONITORING =========");
+        System.out.println("Pending        : " + pending);
+        System.out.println("In Progress    : " + inProgress);
+        System.out.println("Resolved       : " + resolved);
+        System.out.println("Total Tickets  : " + ticketList.size());
+        System.out.println("=====================================\n");
+    }
+    
+    // Calculate success ticket 
+    public void generateMonthlyTicketReport(int year, int month) {
+        int totalInMonth = 0;
+        int resolvedInMonth = 0;
+        String searchTarget = String.format("%04d-%02d", year, month);
+
+        for (Ticket t : ticketList) {
+            LocalDateTime cTime = t.getCreationTime();
+            // Check if ticket was created in this month
+            if (cTime.getYear() == year && cTime.getMonthValue() == month) {
+                totalInMonth++;
+                if (t.getStatus().equalsIgnoreCase("Resolved")) {
+                    resolvedInMonth++;
+                }
+            }
+        }
+
+        double rate = (totalInMonth > 0) ? ((double)resolvedInMonth / totalInMonth * 100) : 0;
+        System.out.println("\n--- Monthly Ticket Report: " + searchTarget + " ---");
+        System.out.println("Tickets Submitted   : " + totalInMonth);
+        System.out.println("Tickets Resolved    : " + resolvedInMonth);
+        System.out.println("Tickets Unresolved  : " + (totalInMonth - resolvedInMonth));
+        System.out.println("Resolution Rate     : " + String.format("%.2f", rate) + "%");
+        System.out.println("----------------------------------------------\n");
+    }
+    
+        // Calculate Average Response Time for all resolved tickets.
+        public void calculateAverageResponseTime() {
+            long totalMinutes = 0;
+            int resolvedCount = 0;
+
+            for (Ticket t : ticketList) {
+                if (t.getStatus().equalsIgnoreCase("Resolved") && t.getResolutionTime() != null) {
+
+                    // Duration between creation and resolution
+                    Duration duration = Duration.between(t.getCreationTime(), t.getResolutionTime());
+                    totalMinutes += duration.toMinutes(); 
+                    resolvedCount++;
+                }
+            }
+
+            System.out.println("\n===== PERFORMANCE MONITORING =====");
+            if (resolvedCount > 0) {
+                long avgMinutes = totalMinutes / resolvedCount;
+                System.out.println("Average Response Time: " + avgMinutes + " minutes");
+
+
+                if (avgMinutes > 60) {
+                    System.out.println("Average Response Time (Hours): " + (avgMinutes / 60.0) + " hours");
+                }
+            } else {
+                System.out.println("No resolved tickets available to calculate performance.");
+            }
+            System.out.println("==================================\n");
+        }
+    
+    public void generateSystemReport(int year,int month) {
+        int totalUsers = userList.size();
+        int activeCount = 0;
+        int disabledCount = 0;
+        int managerCount = 0;
+        int staffCount = 0;
+        int customerCount = 0;
+        
+        //Monthly Growth
+        int newJoins = 0;
+        String searchTarget = String.format("%04d-%02d", year, month);
+
+        //Loop the list to count 
+        for (User u : userList) {
+            //Check Account Status
+            if (u.isActive()) {
+                activeCount++;
+            } else {
+                disabledCount++;
+            }
+            //Check Roles
+            String role = u.getRole();
+            if (role.equalsIgnoreCase("Manager")) managerCount++;
+            else if (role.equalsIgnoreCase("Staff")) staffCount++;
+            else if (role.equalsIgnoreCase("Customer")) customerCount++;
+        
+        //Count Monthly Growth (Check if joined in target month)
+            if (u.getDateJoined().startsWith(searchTarget)) {
+                newJoins++;
+            }
+        }
+
+        System.out.println("\n=========================================");
+        System.out.println("        ADMIN REPORT          ");
+        System.out.println("       Report Period: " + searchTarget);
+        System.out.println("=========================================");
+        
+        System.out.println("[OVERALL SYSTEM STATUS]");
+        System.out.println("Total Users      : " + totalUsers);
+        System.out.println("Active Accounts  : " + activeCount);
+        System.out.println("Disabled Accounts: " + disabledCount);
+        
+        System.out.println("\n[ROLE DISTRIBUTION]");
+        System.out.println("Managers  : " + managerCount);
+        System.out.println("Staff     : " + staffCount);
+        System.out.println("Customers : " + customerCount);
+        
+        System.out.println("\n[MONTHLY GROWTH]");
+        System.out.println("New Users Joined in " + searchTarget + ": " + newJoins);
+        System.out.println("Growth Rate: " + (totalUsers > 0 ? (newJoins * 100 / totalUsers) : 0) + "%");
+        System.out.println("=========================================\n");
+    }
+    
+    
+
+    
+    
+
+
+
+ public void viewAllFeedback() {
+    System.out.println("\n--- All Customer Feedback ---");
+    for (Ticket t : ticketList) {
+        if (t.getRating() > 0) {
+            System.out.println("Ticket: " + t.getTicketId() + " | Rating: " + t.getRating() + "/5");
+        }
+    }
+}
+}
