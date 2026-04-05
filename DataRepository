@@ -1,0 +1,138 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.managermodule;
+
+/**
+ *
+ * @author user
+ */
+
+import java.util.ArrayList;
+import java.io.*;
+import java.time.LocalDateTime;
+
+public class DataRepository {
+    // User Persistence
+    public void saveUsersToFile(ArrayList<User>userList) {
+        // FileWriter open file, BufferWriter make process faster by buffering characters
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("users.txt"))) {
+            for (User u : userList) {
+                /** String concatenation
+                 * | as delimiter to separate
+                 */
+                String line = u.getUserId() + "|" +
+                              u.getUsername() + "|" +
+                              u.getEmail() + "|" +
+                              u.getPassword() + "|" +
+                              u.getRole() + "|" +
+                              u.isActive() + "|" +
+                              u.getDateJoined();
+                writer.write(line);
+                writer.newLine(); //New Line
+            }
+            System.out.println("[System] Data saved to users.txt successfully.");
+        } catch (IOException e) { // handle file errors like File not found
+            System.out.println("[Error] Could not save data: " + e.getMessage());
+        }
+    }
+    
+    public ArrayList<User> loadUsersFromFile() {
+        // Dynamic container: resize if add or remove users
+        ArrayList<User> userList = new ArrayList<>();
+        // Create a file to represent "users.txt" database file
+        File file = new File("users.txt");
+        // Prevent program crash during first run
+        if (!file.exists()) return userList;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            // Reading the file one by one until the end
+            while ((line = reader.readLine()) != null) {
+                // Split the line into array using "|" to separate
+                String[] data = line.split("\\|");
+                if (data.length == 7) {
+                    String id = data[0];
+                    String name = data[1];
+                    String email = data[2];
+                    String pwd = data[3];
+                    String role = data[4];
+                    // Manually convert the string "true" / "false" into boolean type
+                    boolean active = Boolean.parseBoolean(data[5]);
+                    String date = data[6];
+                    
+                    //Polymorphic
+                    User loadedUser;
+                    // Ensure the characters correct either "MANAGER" or "manager" 
+                    if (role.equalsIgnoreCase("Manager")) {
+                        loadedUser = new Manager(id, name, email, pwd, active, date, "IT Department");
+                    } else if (role.equalsIgnoreCase("Staff")) {
+                        loadedUser = new Staff(id, name, email, pwd, role, active, date, "Support");
+                    } else {
+                        loadedUser = new User(id, name, email, pwd, role, active, date);
+                    }
+                    // Once user created, add it into ArrayList
+                    userList.add(loadedUser);
+                }
+            }
+            System.out.println("[System] Data loaded from users.txt. Total User: " + userList.size());
+        } catch (IOException e) {
+            System.out.println("[Error] Could not load data: " + e.getMessage());
+        }
+    return userList;
+    }
+    
+    // Ticket Persistence
+    public void saveTicketsToFile(ArrayList<Ticket>ticketList) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("tickets.txt"))) {
+            for (Ticket t : ticketList) {
+                /*** Handle null values
+                Check staff assignment, if not "NONE"
+                * Check ticket is resolved? If not "NULL" 
+                */
+                String staff = (t.getStaffId() != null) ? t.getStaffId() : "NONE";
+                String rTime = (t.getResolutionTime() != null) ? t.getResolutionTime().toString() : "NULL";
+                // format：id|staffId|rating|status|priority|creationTime|resolutionTime
+                String line = t.getTicketId() + "|" +
+                              (staff != null ? t.getStaffId() : "NONE") + "|" +
+                              t.getRating() + "|" +
+                              t.getStatus() + "|" +
+                              t.getPriority() + "|" +
+                              t.getCreationTime() + "|" +
+                              rTime;
+                writer.write(line);
+                writer.newLine();
+            }
+            System.out.println("[System] Ticket data saved successfully.");
+        } catch (IOException e) {
+            System.out.println("[Error] Save Tickets failed: " + e.getMessage());
+        }
+    }
+    
+    //Load Ticket from tickets.txt
+    public ArrayList<Ticket> loadTicketsFromFile() {
+        ArrayList<Ticket> ticketList = new ArrayList<>();
+        File file = new File("tickets.txt");
+        if (!file.exists()) return ticketList;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Split by | (Need \\| for regex)
+                String[] data = line.split("\\|");
+                if (data.length == 7) {
+                        Ticket t = new Ticket(data[0], data[1].equals("NONE") ? null : data[1], Integer.parseInt(data[2]), data[3], data[4]);
+                        t.setCreationTime(LocalDateTime.parse(data[5]));
+                        if (!data[6].equals("NULL")) {t.setResolutionTime(LocalDateTime.parse(data[6]));
+                    }
+                        ticketList.add(t);
+                }
+            }
+            System.out.println("[System] Loaded " + ticketList.size() + " tickets from file.");
+        } catch (IOException | java.time.format.DateTimeParseException e) { // When date string in wrong format
+            System.out.println("[Error] Could not load tickets: " + e.getMessage());
+        }
+        return ticketList;
+    }
+}
