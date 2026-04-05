@@ -1,0 +1,124 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.mycompany.managermodule;
+
+/**
+ *
+ * @author user
+ */
+public class User{
+    private String userId;
+    private String username;
+    private String email;
+    private String password;
+    private String role;
+    private boolean isActive; // Account management: true active, false disabled
+    private String dateJoined; // Monthly report
+
+    public User(){
+    setUserId("ABC1234567");
+    setUsername("Guest01");
+    setEmail("none@example.com");
+    setPassword("123456789");
+    setRole("Customer");
+    setActive(true); 
+    this.dateJoined = java.time.LocalDate.now().toString();
+    }
+    
+    public User(String userId, String username,String email,String password,String role, boolean isActive, String dateJoined){
+    setUserId(userId);
+    setUsername(username);
+    setEmail(email);
+    setPassword(password);
+    setRole(role);
+    setActive(isActive); 
+    this.dateJoined = dateJoined;
+    }
+    
+    public String getUserId(){return userId;}
+    public void setUserId(String userId){
+        // only letters and numbers,{9,} minimum length 9
+        if(userId != null && userId.toUpperCase().matches("^[a-zA-Z0-9]{9,}$")){
+        this.userId = userId.toUpperCase();}
+        else{
+            // If fails, it assigns to error labels
+            this.userId = "INVALID_ID";
+        }   
+}
+    
+    public String getUsername(){return username;}
+    public void setUsername(String username){
+        if(username != null && username.matches("^[a-zA-Z0-9_]{6,}$")){
+        this.username = username;}
+        else{
+        this.username = "INVALID_USERNAME";
+        }
+}
+
+    
+    public String getEmail(){return email;}
+    public void setEmail(String email){
+        // ensure presence of @ and .
+        if(email != null && email.contains("@") && email.contains(".")){
+        this.email = email;}
+        else{
+            this.email = "INVALID EMAIL";
+        }
+    }
+    
+    public String getPassword(){return password;}
+    public void setPassword(String password){
+        if(password != null && password.length()>=9){
+        this.password = password;}
+        else{
+            this.password = "INVALID PASSWORD";
+        }
+    }
+    
+    public String getRole(){return role;}
+    public void setRole(String role){
+        if(role != null && (role.equals("Customer") || role.equals("Staff") || role.equals("Manager"))){
+                this.role = role;}
+        else{
+            this.role = "Customer";
+        }
+    }
+    
+    // getter for boolean
+    public boolean isActive(){return isActive;}
+    public void setActive(boolean isActive){this.isActive = isActive;}
+    
+    public String getDateJoined(){return dateJoined;}
+    
+    // Validate user credentials and account status
+    public boolean validateLogin(String inputUser, String inputPass){
+        return this.username.equals(inputUser) &&
+                this.password.equals(inputPass)&&
+                this.isActive;
+       
+    }
+    
+    // Manager Login Validation
+    public boolean validateManagerLogin(String inputUser, String inputPass) {
+        //Check username, password, and active status)
+        if (validateLogin(inputUser, inputPass)) {
+            
+            // Check if the role is Manager
+            if (this.role.equalsIgnoreCase("Manager")) {
+                System.out.println("[Login] Welcome, Manager " + this.username);
+                return true;
+            } else {
+                System.out.println("[Access Denied] You do not have Manager privileges.");
+                return false;
+            }
+        }
+        
+        System.out.println("[Error] Invalid username or password.");
+        return false;
+    }
+
+}
+
+
