@@ -1,3 +1,5 @@
+package com.mycompany.assignment;
+
 public class Feedback {
     private String feedbackId;
     private String ticketId;

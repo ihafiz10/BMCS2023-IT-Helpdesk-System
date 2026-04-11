@@ -1,13 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.assignment;
-
-/**
- *
- * @author User
- */
 
 import java.util.List;
 
@@ -15,14 +6,18 @@ public class Staff extends User {
 
     private String staffID;
 
-    public Staff(String username, String password, String staffID) {
-        super(username, password);
+    public Staff(String userId, String username, String email, String password, String staffID) {
+        super(userId, username, email, password, "Staff", true,
+                java.time.LocalDate.now().toString());
         this.staffID = staffID;
     }
 
-    // ✅ FIXED LOGIN
-    public boolean login(String pass) {
-        return getPassword().equals(pass);
+    public String getStaffID() {
+        return staffID;
+    }
+
+    public boolean login(String username, String password) {
+        return validateLogin(username, password);
     }
 
     public void viewAllTickets(List<Ticket> tickets) {
@@ -33,18 +28,26 @@ public class Staff extends User {
 
         for (Ticket t : tickets) {
             System.out.println(t);
+            System.out.println("----------------------------");
         }
     }
 
     public void respondTicket(Ticket t, String response) {
         if (t.addResponse(response)) {
             System.out.println("Response added!");
+        } else {
+            System.out.println("Failed to add response.");
         }
     }
 
     public void updateStatus(Ticket t, String status) {
-        if (t.updateStatus(status)) {
+        String oldStatus = t.getStatus();
+        t.setStatus(status);
+
+        if (!oldStatus.equalsIgnoreCase(t.getStatus())) {
             System.out.println("Status updated!");
+        } else {
+            System.out.println("Status was not updated.");
         }
     }
 }

@@ -1,120 +1,100 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-
 package com.mycompany.assignment;
 
-
-/**
- *
- * @author User
- */
 import java.util.Scanner;
 
 public class StaffModule {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        Database db = new Database();
 
-        // Sample staff
-        Staff staff = new Staff("Admin", "1234", "S1");
-
-        // 🔐 Login
-        System.out.print("Enter username: ");
-        String username = sc.nextLine();
-
-        System.out.print("Enter password: ");
-        String pass = sc.nextLine();
-
-        if (!staff.getUsername().equals(username) || !staff.login(pass)) {
-            System.out.println("Invalid username or password!");
-            return;
-        }
+    public void run(Scanner sc, TicketService service, Staff staff) {
 
         int choice;
 
         do {
-            System.out.println("\n1. Add Ticket");
-            System.out.println("2. View Tickets");
-            System.out.println("3. Update Ticket");
-            System.out.println("4. Respond Ticket");
-            System.out.println("5. Exit");
+
+            System.out.println("\n======================= Staff Guidelines ========================");
+            System.out.println("1. View all tickets or only tickets assigned to you.");
+            System.out.println("2. Use “View My Assigned Tickets” to focus on your assigned work.");
+            System.out.println("3. Update ticket status as you process the issue.");
+            System.out.println("4. Add responses to update customers on progress.");
+            System.out.println("5. Closed tickets cannot be modified.");
+            System.out.println("=================================================================\n");
+
+            System.out.println("\n===== Staff Menu =====");
+            System.out.println("Logged in as Staff ID: " + staff.getStaffID());
+            System.out.println("1. View All Tickets");
+            System.out.println("2. View My Assigned Tickets");
+            System.out.println("3. Update Ticket Status");
+            System.out.println("4. Respond to Ticket");
+            System.out.println("5. Search Ticket");
+            System.out.println("6. Filter by Status");
+            System.out.println("7. Filter by Priority");
+            System.out.println("8. Exit");
             System.out.print("Choice: ");
 
-            while (!sc.hasNextInt()) {
-                System.out.println("Enter a number!");
-                sc.next();
+            while (true) {
+                String input = sc.nextLine().trim();
+                try {
+                    choice = Integer.parseInt(input);
+                    break;
+                } catch (NumberFormatException e) {
+                    System.out.print("Enter a number: ");
+                }
             }
 
-            choice = sc.nextInt();
-            sc.nextLine();
-
             switch (choice) {
-
                 case 1:
-                    System.out.print("Ticket ID: ");
-                    String id = sc.nextLine();
-
-                    System.out.print("Description: ");
-                    String desc = sc.nextLine();
-
-                    System.out.print("Priority: ");
-                    String pri = sc.nextLine();
-
-                    if (id.isEmpty() || desc.isEmpty() || pri.isEmpty()) {
-                        System.out.println("All fields required!");
-                        break;
-                    }
-
-                    Ticket newT = new Ticket(id, desc, pri);
-
-                    if (db.addTicket(newT)) {
-                        System.out.println("Ticket added!");
-                    }
+                    staff.viewAllTickets(service.getTickets());
                     break;
 
                 case 2:
-                    staff.viewAllTickets(db.getTickets());
+                    service.viewTicketsByStaff(staff.getStaffID());
                     break;
 
                 case 3:
                     System.out.print("Enter Ticket ID: ");
-                    String upID = sc.nextLine();
+                    String ticketId = sc.nextLine();
 
-                    Ticket t1 = db.findTicketByID(upID);
-
-                    if (t1 == null) {
-                        System.out.println("Ticket not found!");
-                        break;
-                    }
-
-                    System.out.print("New Status (Open / In Progress / Resolved / Closed): ");
+                    System.out.print("New Status (Open / Pending / In Progress / Resolved / Closed): ");
                     String status = sc.nextLine();
 
-                    staff.updateStatus(t1, status);
+                    service.updateTicketStatus(ticketId, status);
                     break;
 
                 case 4:
                     System.out.print("Enter Ticket ID: ");
-                    String resID = sc.nextLine();
-
-                    Ticket t2 = db.findTicketByID(resID);
-
-                    if (t2 == null) {
-                        System.out.println("Ticket not found!");
-                        break;
-                    }
+                    String responseTicketId = sc.nextLine();
 
                     System.out.print("Response: ");
                     String response = sc.nextLine();
 
-                    staff.respondTicket(t2, response);
+                    service.addResponseToTicket(responseTicketId, response);
                     break;
 
+                case 5:
+                    System.out.print("Enter keyword / Ticket ID / Status / Priority / Customer ID: ");
+                    String keyword = sc.nextLine();
+                    service.searchTickets(keyword);
+                    break;
+
+                case 6:
+                    System.out.print("Enter status to filter (Open / Pending / In Progress / Resolved / Closed): ");
+                    String filterStatus = sc.nextLine();
+                    service.filterTicketsByStatus(filterStatus);
+                    break;
+
+                case 7:
+                    System.out.print("Enter priority to filter (Low / Medium / High): ");
+                    String filterPriority = sc.nextLine();
+                    service.filterTicketsByPriority(filterPriority);
+                    break;
+
+                case 8:
+                    System.out.println("Exiting Staff Module...");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice!");
             }
 
-        } while (choice != 5);
-
-        System.out.println("Exiting system...");
+        } while (choice != 8);
     }
 }
