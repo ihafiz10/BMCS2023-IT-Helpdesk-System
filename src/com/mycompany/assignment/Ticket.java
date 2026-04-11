@@ -36,7 +36,7 @@ public class Ticket {
         return result.toString().trim();
     }
 
-    // ✅ Constructor (AUTO ID)
+    // Constructor (AUTO ID)
     public Ticket(String customerId, String description, String priority, String dateSubmitted) {
 
         this.ticketId = "T" + counter;
@@ -180,13 +180,13 @@ public class Ticket {
 
     public boolean addResponse(String response) {
 
-        // ❌ Prevent responding to closed ticket (optional rule)
+        // Prevent responding to closed ticket (optional rule)
         if (this.status.equalsIgnoreCase("Closed")) {
             System.out.println("Cannot respond to a closed ticket.");
             return false;
         }
 
-        // ❌ Empty validation
+        // Empty validation
         if (response == null || response.trim().isEmpty()) {
             System.out.println("Response cannot be empty!");
             return false;
