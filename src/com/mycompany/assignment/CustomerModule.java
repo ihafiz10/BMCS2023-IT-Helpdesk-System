@@ -89,13 +89,13 @@ public class CustomerModule {
                         break;
                     }
 
-                    // ✅ Ensure customer owns the ticket
+                    // Ensure customer owns the ticket
                     if (!ticket.getCustomerId().equals(customer.getCustomerId())) {
                         System.out.println("You can only close your own tickets.");
                         break;
                     }
 
-                    // ✅ Prevent closing already closed ticket
+                    // Prevent closing already closed ticket
                     if (ticket.getStatus().equalsIgnoreCase("Closed")) {
                         System.out.println("Ticket is already closed.");
                         break;
@@ -111,7 +111,7 @@ public class CustomerModule {
 
                     Ticket feedbackTicket = service.findTicketById(feedbackTicketId);
 
-                    // ❌ Prevent duplicate feedback
+                    // Prevent duplicate feedback
                     if (service.hasFeedbackForTicket(feedbackTicketId)) {
                         System.out.println("Feedback has already been submitted for this ticket.");
                         break;
