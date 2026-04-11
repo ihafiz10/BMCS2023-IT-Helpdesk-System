@@ -275,7 +275,7 @@ public class Main {
                         break;
                     }
 
-                    // ✅ Create account
+                    // Create account
                     Customer newCustomer = new Customer(signUpUsername, signUpEmail, signUpPassword);
                     customers.add(newCustomer);
 
