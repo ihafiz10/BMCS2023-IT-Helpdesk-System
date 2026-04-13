@@ -1,128 +1,45 @@
 package Assignment;
 
-public class User {
-    private String userId;
-    private String username;
-    private String email;
-    private String password;
-    private String role;
-    private boolean isActive;
-    private String dateJoined;
+public class Staff extends User {
 
-    public User() {
-        setUserId("ABC1234567");
-        setUsername("Guest01");
-        setEmail("none@example.com");
-        setPassword("123456789");
-        setRole("Customer");
-        setActive(true);
-        this.dateJoined = java.time.LocalDate.now().toString();
+    private String staffID;
+    
+    public Staff(){};
+
+    public Staff(String userId, String username, String email, String password, String staffID) {
+        super(userId, username, email, password, "Staff", true,
+                java.time.LocalDate.now().toString());
+        this.staffID = staffID;
     }
+    
+    public void setStaffID(String staffID) {
 
-    public User(String userId, String username, String email, String password,
-                String role, boolean isActive, String dateJoined) {
-        setUserId(userId);
-        setUsername(username);
-        setEmail(email);
-        setPassword(password);
-        setRole(role);
-        setActive(isActive);
-        this.dateJoined = dateJoined;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        if (userId != null && userId.toUpperCase().matches("^[a-zA-Z0-9]{2,}$")) {
-            this.userId = userId.toUpperCase();
+        if (staffID != null && staffID.toUpperCase().matches("^[a-zA-Z0-9]{2,}$")) {
+            this.staffID = staffID.toUpperCase();
         } else {
-            this.userId = "INVALID_ID";
+            this.staffID = "INVALID_STAFF_ID";
         }
     }
+    public String getStaffID() {return staffID;}
 
-    public String getUsername() {
-        return username;
-    }
+    public boolean login(String username, String password) {return validateLogin(username, password);}
 
-    public void setUsername(String username) {
-    String strictRegex = "^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$";
-
-    if (username != null && username.matches(strictRegex) 
-        && username.length() >= 6 && username.length() <= 12) {
-        this.username = username;
-    } else {
-        this.username = "INVALID_USERNAME";
-    }
-}
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        if (email != null && email.contains("@") && email.contains(".")) {
-            this.email = email;
+    public void respondTicket(Ticket t, String response) {
+        if (t.addResponse(response)) {
+            System.out.println("Response added!");
         } else {
-            this.email = "INVALID_EMAIL";
+            System.out.println("Failed to add response.");
         }
     }
 
-    public String getPassword() {
-        return password;
-    }
+    public void updateStatus(Ticket t, String status) {
+        String oldStatus = t.getStatus();
+        t.setStatus(status);
 
-    public void setPassword(String password) {
-        if (password != null && password.length() >= 9) {
-            this.password = password;
+        if (!oldStatus.equalsIgnoreCase(t.getStatus())) {
+            System.out.println("Status updated!");
         } else {
-            this.password = "INVALID_PASSWORD";
+            System.out.println("Status was not updated.");
         }
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        if (role != null && (role.equals("Customer") || role.equals("Staff") || role.equals("Manager"))) {
-            this.role = role;
-        } else {
-            this.role = "Customer";
-        }
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean isActive) {
-        this.isActive = isActive;
-    }
-
-    public String getDateJoined() {
-        return dateJoined;
-    }
-
-    public boolean validateLogin(String inputUser, String inputPass) {
-        return this.username.equals(inputUser)
-                && this.password.equals(inputPass)
-                && this.isActive;
-    }
-
-    public boolean validateManagerLogin(String inputUser, String inputPass) {
-        if (validateLogin(inputUser, inputPass)) {
-            if (this.role.equalsIgnoreCase("Manager")) {
-                System.out.println("[Login] Welcome, Manager " + this.username);
-                return true;
-            } else {
-                System.out.println("[Access Denied] You do not have Manager privileges.");
-                return false;
-            }
-        }
-
-        System.out.println("[Error] Invalid username or password.");
-        return false;
     }
 }
