@@ -1,4 +1,4 @@
-package com.mycompany.assignment;
+package Assignment;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,6 +36,8 @@ public class Ticket {
         return result.toString().trim();
     }
 
+    public Ticket(){};
+    
     // Constructor (AUTO ID)
     public Ticket(String customerId, String description, String priority, String dateSubmitted) {
 
@@ -65,63 +67,35 @@ public class Ticket {
 
     // ================= GETTERS =================
 
-    public String getTicketId() {
-        return ticketId;
-    }
+    public String getTicketId() {return ticketId;}
 
     // compatibility (important)
-    public String getTicketID() {
-        return ticketId;
-    }
+    public String getTicketID() {return ticketId;}
 
-    public String getCustomerId() {
-        return customerId;
-    }
+    public String getCustomerId() {return customerId;}
 
-    public String getAssignedStaffId() {
-        return assignedStaffId;
-    }
+    public String getAssignedStaffId() {return assignedStaffId;}
 
     // compatibility
-    public String getStaffId() {
-        return assignedStaffId;
-    }
+    public String getStaffId() {return assignedStaffId;}
 
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() {return description;}
 
-    public String getPriority() {
-        return priority;
-    }
+    public String getPriority() {return priority;}
 
-    public String getStatus() {
-        return status;
-    }
+    public String getStatus() {return status;}
 
-    public String getResponse() {
-        return response;
-    }
+    public String getResponse() {return response;}
 
-    public ArrayList<String> getResponses() {
-        return responses;
-    }
+    public ArrayList<String> getResponses() {return responses;}
 
-    public String getDateSubmitted() {
-        return dateSubmitted;
-    }
+    public String getDateSubmitted() {return dateSubmitted;}
 
-    public LocalDateTime getCreationTime() {
-        return creationTime;
-    }
+    public LocalDateTime getCreationTime() {return creationTime;}
 
-    public LocalDateTime getResolutionTime() {
-        return resolutionTime;
-    }
+    public LocalDateTime getResolutionTime() {return resolutionTime;}
 
-    public int getRating() {
-        return rating;
-    }
+    public int getRating() {return rating;}
 
     // ================= SETTERS =================
 
@@ -139,7 +113,6 @@ public class Ticket {
     }
 
     public void setStatus(String status) {
-
         if (status == null || status.isEmpty()) {
             System.out.println("Invalid status.");
             return;
@@ -168,7 +141,6 @@ public class Ticket {
     }
 
     public void setResponse(String response) {
-
         if (response == null || response.isEmpty()) {
             System.out.println("Response cannot be empty.");
             return;
@@ -198,12 +170,31 @@ public class Ticket {
     }
 
     public void setRating(int rating) {
-
         if (rating >= 1 && rating <= 5) {
             this.rating = rating;
         } else {
             System.out.println("Rating must be between 1 and 5.");
         }
+    }
+    
+    public static void setCounter(int newCounter) {
+        counter = newCounter;
+    }
+    
+    public void setTicketId(String ticketId) {
+        this.ticketId = ticketId;
+    }
+    
+    public void setCreationTime(LocalDateTime creationTime) {
+        this.creationTime = creationTime;
+    }
+    
+    public void setResolutionTime(LocalDateTime resolutionTime) {
+        this.resolutionTime = resolutionTime;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     // ================= METHODS =================
@@ -218,27 +209,35 @@ public class Ticket {
         }
     }
 
-    @Override
-    public String toString() {
-        String history = "";
+ @Override
+public String toString() {
+    String staffDisplay = (assignedStaffId == null || assignedStaffId.isEmpty()) ? "Unassigned" : assignedStaffId;
 
-        if (responses.isEmpty()) {
-            history = "No response yet";
-        } else {
-            int i = 1;
-            for (String r : responses) {
-                history += i + ". " + r + "\n";
-                i++;
-            }
-        }
-
-        return "Ticket ID: " + ticketId +
-                "\nCustomer ID: " + customerId +
-                "\nAssigned Staff ID: " + (assignedStaffId == null ? "Not Assigned" : assignedStaffId) +
-                "\nDescription: " + description +
-                "\nPriority: " + priority +
-                "\nStatus: " + status +
-                "\nResponses:\n" + history +
-                "\nDate Submitted: " + dateSubmitted;
-    }
+    return """
+        ============================== TICKET DETAILS ==============================
+          Ticket ID        : %s
+          Status           : [%s]
+          Priority         : %s
+        ----------------------------------------------------------------------------
+          Customer ID      : %s
+          Staff Assigned   : %s
+          Date Submitted   : %s
+        ----------------------------------------------------------------------------
+          Description      : 
+          %s
+          
+          Responses History:
+          %s
+        ============================================================================
+        """.formatted(
+            ticketId, 
+            status.toUpperCase(), 
+            priority, 
+            customerId, 
+            staffDisplay, 
+            dateSubmitted, 
+            description, 
+            response.isEmpty() ? "No responses yet." : response
+        );
+}
 }
