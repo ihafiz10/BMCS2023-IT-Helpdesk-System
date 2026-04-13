@@ -1,173 +1,178 @@
-package com.mycompany.assignment;
+package Assignment;
 
 import java.util.Scanner;
 
 public class CustomerModule {
+    
+    private void pause(Scanner sc) {
+        System.out.print("\nPress ENTER to return to the Customer Menu...");
+        sc.nextLine();
+    }
 
-    public void run(Scanner sc, TicketService service, Customer customer) {
-
-
+    public void run(Scanner sc, TicketService service, Customer customer, DataRepository repo) {
         int choice;
 
         do {
-            System.out.println("\n===== Customer Menu =====");
-            System.out.println("Welcome, " + customer.getUsername());
-            System.out.println("Your Customer ID: " + customer.getCustomerId());
-            System.out.println("1. Create Ticket");
-            System.out.println("2. View My Tickets");
-            System.out.println("3. Close Ticket");
-            System.out.println("4. Give Feedback");
-            System.out.println("5. Exit");
-            System.out.print("Choice: ");
+            System.out.println("\n==================================================");
+            System.out.println("                CUSTOMER MAIN MENU                ");
+            System.out.println("==================================================");
+            System.out.println(" Welcome, " + customer.getUsername() + " (ID: " + customer.getCustomerId() + ")");
+            System.out.println("--------------------------------------------------");
+            System.out.println(" 1. Create New Ticket");
+            System.out.println(" 2. View My Ticket History");
+            System.out.println(" 3. Close an Active Ticket");
+            System.out.println(" 4. Submit Service Feedback");
+            System.out.println(" 5. Logout & Return");
+            System.out.println("==================================================");
 
-            while (true) {
-                String input = sc.nextLine().trim();
-                try {
-                    choice = Integer.parseInt(input);
-                    break;
-                } catch (NumberFormatException e) {
-                    System.out.print("Please enter a valid number: ");
-                }
-            }
+            choice = service.getValidIntInput(sc, "Choice (1-5): ", 1, 5);
 
             switch (choice) {
 
-                case 1:
-                    System.out.print("Enter Description: ");
-                    String desc = sc.nextLine();
+                case 1 -> {
+                    System.out.println("\n===== Select Issue Category =====");
+                    System.out.println("1. Hardware");
+                    System.out.println("2. Software");
+                    System.out.println("3. Network/Wi-Fi");
+                    System.out.println("4. Account/Login");
+                    System.out.println("5. Others");
+                    while(true){
 
-                    if (desc.trim().isEmpty()) {
-                        System.out.println("Description cannot be empty.");
+                    int categoryChoice = service.getValidIntInput(sc, "Select Category: ", 1, 5);
+                    String category = switch (categoryChoice) {
+                        case 1 -> "Hardware";
+                        case 2 -> "Software";
+                        case 3 -> "Network/Wi-Fi";
+                        case 4 -> "Account/Login";
+                        default -> "Others";
+                    };
+                    
+                    String desc = service.getValidStringInput(sc, 
+                            "Enter problem description (10-200 chars): ", 
+                            "^.{10,200}$", 
+                            "Description must be between 10 and 200 characters.");
+                    
+                    if (desc.equals("0")) {
+                        System.out.println("Ticket creation cancelled.");
                         break;
                     }
 
-                    String pri;
-                    while (true) {
-                        System.out.print("Enter Priority (Low / Medium / High): ");
-                        pri = sc.nextLine();
-
-                        if (pri.equalsIgnoreCase("Low") ||
-                                pri.equalsIgnoreCase("Medium") ||
-                                pri.equalsIgnoreCase("High")) {
-
-                            // make it look nice
-                            pri = pri.substring(0,1).toUpperCase() +
-                                    pri.substring(1).toLowerCase();
-                            break;
-
-                        } else {
-                            System.out.println("Invalid priority. Please enter Low, Medium, or High.");
-                        }
-                    }
-
-                    try {
+                    System.out.println("\n===== Select Priority =====");
+                    System.out.println("1. High   (System Down / Cannot Work)");
+                    System.out.println("2. Medium (Function Error / Hard to Work)");
+                    System.out.println("3. Low    (General Question / Minor Issue)");
+                    int priChoice = service.getValidIntInput(sc, "Select Priority: ", 1, 3);
+                    String pri = switch (priChoice) {
+                        case 1 -> "High";
+                        case 2 -> "Medium";
+                        default -> "Low";
+                    };
+                        String finalDesc = "[" + category + "] " + desc;
+                        
                         Ticket t = new Ticket(
                                 customer.getCustomerId(),
-                                desc,
+                                finalDesc,
                                 pri,
                                 java.time.LocalDate.now().toString()
                         );
-
                         service.createTicket(t);
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Error: " + e.getMessage());
-                    }
-                    break;
-
-                case 2:
-                    service.viewTicketsByCustomer(customer.getCustomerId());
-                    break;
-
-                case 3:
-                    System.out.print("Enter Ticket ID to close: ");
-                    String closeId = sc.nextLine();
-
-                    Ticket ticket = service.findTicketById(closeId);
-
-                    if (ticket == null) {
-                        System.out.println("Ticket not found.");
+                        repo.saveTickets(service.getTickets());
+                        pause(sc);
                         break;
-                    }
+                    } 
+                }
 
+                case 2 -> {
+                    service.viewTicketsByCustomer(sc, customer.getCustomerId());
+                    pause(sc);
+                }
+
+                case 3 -> {
+                    while (true) {
+                    String closeId = service.getValidStringInput(sc, 
+                                "Enter Ticket ID to close (or 0 to return): ", 
+                                "^[a-zA-Z0-9]+$", "Invalid ID format!");
+                    
+                    if (closeId.equals("0")) break;
+                    
+                    Ticket ticket = service.findTicketById(closeId);
+                    
+                    if (ticket == null) {
+                        System.out.println("Ticket not found. Please try again.\n"); continue;
+                    }
+                    
                     // Ensure customer owns the ticket
                     if (!ticket.getCustomerId().equals(customer.getCustomerId())) {
-                        System.out.println("You can only close your own tickets.");
-                        break;
+                        System.out.println("You can only close your own tickets.\n");
+                        continue;
                     }
 
                     // Prevent closing already closed ticket
                     if (ticket.getStatus().equalsIgnoreCase("Closed")) {
-                        System.out.println("Ticket is already closed.");
-                        break;
+                        System.out.println("Ticket is already closed.\n");
+                        continue;
                     }
-
                     ticket.setStatus("Closed");
-                    System.out.println("Ticket closed successfully.");
+                    System.out.println("Ticket " + closeId + " closed successfully.");
+                    repo.saveTickets(service.getTickets());
                     break;
+                    }
+                    pause(sc);
+                }
+                    
 
-                case 4:
-                    System.out.print("Enter closed Ticket ID to give feedback: ");
-                    String feedbackTicketId = sc.nextLine();
-
+                case 4 -> {
+                    while (true) {
+                    String feedbackTicketId = service.getValidStringInput(sc, 
+                                "Enter closed Ticket ID for feedback (or 0 to return): ", 
+                                "^[a-zA-Z0-9]+$", "Invalid ID!");
+                    if (feedbackTicketId.equals("0")) break;
+                    
                     Ticket feedbackTicket = service.findTicketById(feedbackTicketId);
 
+                    if (feedbackTicket == null) {
+                        System.out.println("Ticket not found."); continue;
+                    }
+                    
+                    if (!feedbackTicket.getCustomerId().equals(customer.getCustomerId())) {
+                        System.out.println("You can only give feedback for your own tickets."); continue;
+                    }
+                    
+                    if (!feedbackTicket.getStatus().equalsIgnoreCase("Closed")) {
+                        System.out.println("Feedback can only be given for closed tickets."); continue;
+                    }
+                    
                     // Prevent duplicate feedback
                     if (service.hasFeedbackForTicket(feedbackTicketId)) {
-                        System.out.println("Feedback has already been submitted for this ticket.");
-                        break;
+                        System.out.println("Feedback has already been submitted for this ticket."); continue;
                     }
+                    
+                    System.out.println("\nHow would you rate our service?");
+                    System.out.println("5 - Excellent");
+                    System.out.println("4 - Good");
+                    System.out.println("3 - Fair");
+                    System.out.println("2 - Poor");
+                    System.out.println("1 - Very Poor");
+                    int rating = service.getValidIntInput(sc, "Your rating (1-5): ", 1, 5);
+                    
 
-                    if (feedbackTicket == null) {
-                        System.out.println("Ticket not found.");
-                        break;
-                    }
-
-                    if (!feedbackTicket.getCustomerId().equals(customer.getCustomerId())) {
-                        System.out.println("You can only give feedback for your own tickets.");
-                        break;
-                    }
-
-                    if (!feedbackTicket.getStatus().equalsIgnoreCase("Closed")) {
-                        System.out.println("Feedback can only be given for closed tickets.");
-                        break;
-                    }
-
-                    int rating;
-                    while (true) {
-                        System.out.print("Enter rating (1-5): ");
-                        String input = sc.nextLine().trim();
-
-                        try {
-                            rating = Integer.parseInt(input);
-                            if (rating >= 1 && rating <= 5) {
-                                break;
-                            } else {
-                                System.out.println("Invalid rating. Please enter a number from 1 to 5.");
-                            }
-                        } catch (NumberFormatException e) {
-                            System.out.println("Invalid rating. Please enter a number from 1 to 5.");
-                        }
-                    }
-
-                    System.out.print("Enter comment: ");
-                    String comment = sc.nextLine();
-
-                    String feedbackId = "F" + feedbackTicket.getTicketId().substring(1);
-
-                    try {
-                        Feedback feedback = new Feedback(feedbackId, feedbackTicket.getTicketId(), rating, comment);
+                    System.out.print("Enter comment (or press Enter to skip): ");
+                    String inputComment = sc.nextLine().trim();
+                    if (inputComment.isEmpty()) inputComment = "No comment provided";
+                    
+                    String feedbackId = "F" + feedbackTicketId.substring(1);
+                        Feedback feedback = new Feedback(feedbackId, feedbackTicketId, rating, inputComment);
                         service.addFeedback(feedback);
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Error: " + e.getMessage());
+                        repo.saveFeedback(service.getFeedbackList());
+                        System.out.println("Thank you for your feedback!");
+                        break;
                     }
-                    break;
+                    pause(sc);
+                }
 
-                case 5:
-                    System.out.println("Exiting Customer Module...");
-                    break;
+                case 5 -> System.out.println("Exiting Customer Module...");
 
-                default:
-                    System.out.println("Invalid choice.");
+                default -> System.out.println("Invalid choice.");
             }
 
         } while (choice != 5);
