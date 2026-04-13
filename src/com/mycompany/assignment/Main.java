@@ -1,17 +1,29 @@
-package com.mycompany.assignment;
+package Assignment;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
 
+    public static void pause(Scanner scanner) {
+        System.out.print("\nPress Enter to return to the Manager Dashboard...");
+        scanner.nextLine();
+        }
+    
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+        
         TicketService service = new TicketService();
         ArrayList<Customer> customers = new ArrayList<>();
-
-        // fixed demo staff account
-        Staff demoStaff = new Staff("U002", "staff01", "staff@mail.com", "123456789", "S1");
+        ArrayList<Staff> staffList = new ArrayList<>();
+        staffList.add(new Staff("U002", "staff01", "staff@mail.com", "123456789", "S1"));
+        
+        DataRepository repo = new DataRepository();
+        
+        repo.loadCustomers(customers);
+        repo.loadTicketsFromFile(service.getTickets());
+        repo.loadFeedbacksFromFile(service.getFeedbackList());
+        repo.loadStaffs(staffList);
 
         // Intro screen
         System.out.println("\n\n\n");
@@ -22,7 +34,7 @@ public class Main {
         System.out.println("==========================================================");
         System.out.println("        Developed by Sukah, Adeline, Chloe, Ikhwan        ");
         System.out.println("==========================================================");
-        System.out.println("\n\n\nPress ENTER to start...");
+        System.out.print("\n\n\nPress ENTER to start...");
         sc.nextLine();
 
 
@@ -34,156 +46,66 @@ public class Main {
             System.out.println("2. Staff Login");
             System.out.println("3. Manager Module");
             System.out.println("4. Exit");
-            System.out.print("Choose role: ");
 
-            while (true) {
-                String input = sc.nextLine().trim();
-                try {
-                    choice = Integer.parseInt(input);
-                    break;
-                } catch (NumberFormatException e) {
-                    System.out.print("Please enter a valid number: ");
-                }
-            }
-
+            choice = getValidInt(sc, "Choose role: ", 1, 4);
+            
             switch (choice) {
-                case 1:
-                    handleCustomerAccess(sc, service, customers);
-                    break;
+                case 1 -> handleCustomerAccess(sc, service, customers,repo);
 
-                case 2:
-                    System.out.println("\n--- Staff Login ---");
-                    System.out.println("Demo Staff Username: staff01");
-                    System.out.println("Demo Staff Password: 123456789");
+                case 2 -> {
+                        System.out.println("\n===== Staff Login =====");
+                        System.out.println("Demo Staff Username: staff01");
+                        System.out.println("Demo Staff Password: 123456789");
 
-                    System.out.print("Enter username: ");
-                    String staffUsername = sc.nextLine().trim();
+                        String sName = service.getValidStringInput(sc, "Enter username (or 0 to return): ", "^[a-zA-Z0-9]+$", "Letters and numbers only.");
+                        if (sName.equals("0")) break;
 
-                    System.out.print("Enter password: ");
-                    String staffPassword = sc.nextLine().trim();
+                        String sPass = service.getValidStringInput(sc, "Enter password: ", "^.+$", "Password cannot be empty.");
 
-                    if (staffUsername.equals("staff01") && staffPassword.equals("123456789")) {
-
-                        System.out.print("Enter Staff ID (S1 / S2 / S3 / S4): ");
-                        String staffIdInput = sc.nextLine().trim().toUpperCase();
-
-                        if (!staffIdInput.equals("S1") &&
-                                !staffIdInput.equals("S2") &&
-                                !staffIdInput.equals("S3") &&
-                                !staffIdInput.equals("S4")) {
-                            System.out.println("Invalid Staff ID.");
-                            break;
+                        Staff foundStaff = null;
+                        for (Staff s : staffList) {
+                            if (s.getUsername().equals(sName) && s.getPassword().equals(sPass)) {
+                                foundStaff = s;
+                                break;
+                            }
                         }
 
-                        Staff loggedInStaff = new Staff(
-                                "U" + staffIdInput.substring(1),
-                                staffUsername,
-                                "staff@mail.com",
-                                staffPassword,
-                                staffIdInput
-                        );
-
-                        StaffModule sm = new StaffModule();
-                        sm.run(sc, service, loggedInStaff);
-
-                    } else {
-                        System.out.println("Invalid staff username or password.");
+                            if (foundStaff != null) {
+                                System.out.println("Login successful! Welcome " + foundStaff.getStaffID());
+                                new StaffModule().run(sc, service, foundStaff, repo);
+                            } else {
+                                System.out.println("Invalid staff credentials!");
+                            }
                     }
-                    break;
-
-                case 3:
-                    System.out.println("\n--- Manager Login ---");
+                
+                case 3 -> {
+                    System.out.println("\n===== Manager Login =====");
                     System.out.println("Demo Manager Username: manager01");
                     System.out.println("Demo Manager Password: 123456789");
-
-                    System.out.print("Enter username: ");
-                    String managerUsername = sc.nextLine();
-
-                    System.out.print("Enter password: ");
-                    String managerPassword = sc.nextLine();
-
-                    if (managerUsername.equals("manager01") && managerPassword.equals("123456789")) {
-                        TicketManager manager = new TicketManager();
-                        manager.setTicketList(service.getTickets());
-
-                        int mChoice;
-                        do {
-                            System.out.println("\n====================== Manager Guidelines =======================");
-                            System.out.println("1. Monitor overall ticket status and workload.");
-                            System.out.println("2. Identify critical tickets (High priority).");
-                            System.out.println("3. Assign tickets to staff members.");
-                            System.out.println("4. Closed tickets cannot be reassigned.");
-                            System.out.println("5. Review feedback and system performance.");
-                            System.out.println("=================================================================\n");
-
-                            System.out.println("\n--- Manager Menu ---");
-                            System.out.println("1. Monitor Tickets");
-                            System.out.println("2. Critical Tickets");
-                            System.out.println("3. Monthly Report");
-                            System.out.println("4. Performance");
-                            System.out.println("5. View Feedback");
-                            System.out.println("6. View All Tickets");
-                            System.out.println("7. Assign Ticket");
-                            System.out.println("8. Exit Manager Module");
-                            System.out.print("Choice: ");
-
-                            while (true) {
-                                String input = sc.nextLine().trim();
-                                try {
-                                    mChoice = Integer.parseInt(input);
-                                    break;
-                                } catch (NumberFormatException e) {
-                                    System.out.print("Please enter a valid number: ");
-                                }
-                            }
-
-                            switch (mChoice) {
-                                case 1:
-                                    manager.monitorTicketStatus();
-                                    break;
-                                case 2:
-                                    manager.identifyCriticalTickets();
-                                    break;
-                                case 3:
-                                    manager.generateMonthlyTicketReport(2026, 4);
-                                    break;
-                                case 4:
-                                    manager.calculateAverageResponseTime();
-                                    break;
-                                case 5:
-                                    manager.viewAllFeedback(service.getFeedbackList());
-                                    break;
-                                case 6:
-                                    service.viewAllTickets();
-                                    break;
-                                case 7:
-                                    System.out.print("Enter Ticket ID: ");
-                                    String ticketId = sc.nextLine();
-
-                                    System.out.print("Enter Staff ID (S1 / S2 / S3 / S4): ");
-                                    String staffId = sc.nextLine();
-
-                                    service.assignTicketToStaff(ticketId, staffId);
-                                    break;
-                                case 8:
-                                    System.out.println("Exiting Manager Module...");
-                                    break;
-                                default:
-                                    System.out.println("Invalid choice.");
-                            }
-
-                        } while (mChoice != 8);
+                    
+                    String mName = service.getValidStringInput(sc, "Enter username (or 0 to return): ", "^[a-zA-Z0-9]+$", "Invalid format.");
+                    if (mName.equals("0")) break;
+                    
+                    String mPass = service.getValidStringInput(sc, "Enter password: ", "^.+$", "Invalid password.");
+                    
+                    if (mName.equals("manager01") && mPass.equals("123456789")) {
+                        System.out.println("\nLogin Successful! Welcome, Manager.");
+                        new ManagerModule().run(sc, service, repo, staffList);
                     } else {
-                        System.out.println("Invalid manager username or password.");
+                        System.out.println("Invalid Credentials.");
                     }
-                    break;
+                }
 
-                case 4:
+                case 4 -> {
                     System.out.println("System exited.");
-                    break;
+                        repo.saveCustomers(customers);
+                        repo.saveTickets(service.getTickets());
+                        repo.saveFeedback(service.getFeedbackList());
+                        repo.saveStaffs(staffList);
+                    System.out.println("System exited and data saved.");
+                }
 
-                default:
-                    System.out.println("Invalid choice.");
+                default -> System.out.println("Invalid choice.");
             }
 
         } while (choice != 4);
@@ -191,7 +113,7 @@ public class Main {
         sc.close();
     }
 
-    public static void handleCustomerAccess(Scanner sc, TicketService service, ArrayList<Customer> customers) {
+    public static void handleCustomerAccess(Scanner sc, TicketService service, ArrayList<Customer> customers,DataRepository repo) {
         int customerChoice;
 
         do {
@@ -205,112 +127,80 @@ public class Main {
             System.out.println("6. Feedback can only be given for closed tickets.");
             System.out.println("=================================================================\n");
 
-            System.out.println("\n--- Customer Portal ---");
+            System.out.println("\n===== Customer Portal =====");
             System.out.println("1. Sign In");
             System.out.println("2. Sign Up");
             System.out.println("3. Exit");
-            System.out.print("Choice: ");
 
-            while (true) {
-                String input = sc.nextLine().trim();
-                try {
-                    customerChoice = Integer.parseInt(input);
-                    break;
-                } catch (NumberFormatException e) {
-                    System.out.print("Please enter a valid number: ");
-                }
-            }
+            customerChoice = getValidInt(sc, "Choice: ", 1, 3);
 
             switch (customerChoice) {
-                case 1:
-                    System.out.println("\n--- Customer Sign In ---");
-                    System.out.print("Enter username: ");
-                    String signInUsername = sc.nextLine().trim();
+                case 1 -> {
+                    System.out.println("\n===== Customer Sign In =====");
+                    String username = service.getValidStringInput(sc, "Enter username (or 0 to return): ", "^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$", "Invalid format.");
+                    if (username.equals("0")) return;
+                    
+                    String password = service.getValidStringInput(sc, "Enter password: ", "^.+$", "Cannot be empty.");
 
-                    System.out.print("Enter password: ");
-                    String signInPassword = sc.nextLine().trim();
-
-                    Customer existingCustomer = findCustomer(signInUsername, signInPassword, customers);
+                    Customer existingCustomer = findCustomer(username, password, customers);
 
                     if (existingCustomer != null) {
                         System.out.println("Login successful!");
-                        CustomerModule cm = new CustomerModule();
-                        cm.run(sc, service, existingCustomer);
+                        new CustomerModule().run(sc, service, existingCustomer, repo);
                     } else {
-                        System.out.println("Invalid username or password. Please try again or sign up.");
+                        System.out.println("\nInvalid username or password. Please try again or sign up.\n");
                     }
-                    break;
+                    }
 
-                case 2:
-                    System.out.println("\n--- Customer Sign Up ---");
-
-                    System.out.print("Enter username (min 6 characters): ");
-                    String signUpUsername = sc.nextLine().trim();
-
-                    if (signUpUsername.length() < 6) {
-                        System.out.println("Invalid username. Must be at least 6 characters.");
+                case 2 -> {
+                    System.out.println("\n===== Customer Sign Up =====");
+                    String signUpUsername = "";
+                    
+                    while(true){
+                        String user = service.getValidStringInput(sc, "Enter username (6-12 chars): ", "^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$", "6-12 alphanumeric characters only.");
+                        
+                        if (user.equals("0")) break;
+                        if (isUsernameTaken(user, customers)) {
+                            System.out.println("Username already taken!"); continue;
+                        }
+                        
+                        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+                        String email = service.getValidStringInput(sc, "Enter email: ", emailRegex, "Invalid email format!");
+                        if (isEmailTaken(email, customers)) {
+                            System.out.println("Email already registered!"); continue;
+                        }
+                        
+                        String pass = service.getValidStringInput(sc, "Enter password (min 9 chars): ", "^.{9,}$", "Min. 9 characters required.");
+                        
+                        Customer newCustomer = new Customer(user, email, pass);
+                        customers.add(newCustomer);
+                        System.out.println("Account created! ID: " + newCustomer.getCustomerId());
+                        repo.saveCustomers(customers);
+                        
+                        System.out.print("Press ENTER to enter the Customer Portal...");
+                        sc.nextLine();
+                        
+                        new CustomerModule().run(sc, service, newCustomer, repo);
+                        
                         break;
                     }
-
-                    System.out.print("Enter email: ");
-                    String signUpEmail = sc.nextLine().trim();
-
-                    if (!signUpEmail.contains("@") || !signUpEmail.contains(".")) {
-                        System.out.println("Invalid email format.");
-                        break;
-                    }
-
-                    System.out.print("Enter password (minimum 9 characters): ");
-                    String signUpPassword = sc.nextLine().trim();
-
-                    // Password validation
-                    if (signUpPassword.length() < 9) {
-                        System.out.println("Invalid password. Must be at least 9 characters.");
-                        break; // go back to Customer Portal
-                    }
-
-                    // Duplicate check
-                    if (isDuplicateCustomer(signUpUsername, signUpEmail, customers)) {
-                        System.out.println("This username or email has already been used.");
-                        break;
-                    }
-
-                    // Create account
-                    Customer newCustomer = new Customer(signUpUsername, signUpEmail, signUpPassword);
-                    customers.add(newCustomer);
-
-                    System.out.println("Account created successfully!");
-                    System.out.println("Your Customer ID is: " + newCustomer.getCustomerId());
-
-                    CustomerModule cm = new CustomerModule();
-                    cm.run(sc, service, newCustomer);
-                    break;
-
-                case 3:
-                    System.out.println("Exiting Customer Portal...");
-                    break;
-
-                default:
-                    System.out.println("Invalid choice.");
+                }
+                case 3 -> System.out.println("Exiting Customer Portal...");
+                default -> System.out.println("Invalid choice.");
             }
 
         } while (customerChoice != 3);
     }
 
-    public static Customer findCustomer(String username, String password, ArrayList<Customer> customers) {
-
-        for (Customer c : customers) {
-
-
-            if (c.getUsername().trim().equalsIgnoreCase(username.trim()) &&
-                    c.getPassword().trim().equals(password.trim())) {
-
-                return c;
-            }
+    public static Customer findCustomer(String user, String pass, ArrayList<Customer> customers) {
+    for (Customer c : customers) {
+        if (c.getUsername().trim().equalsIgnoreCase(user.trim()) && 
+            c.getPassword().equals(pass)) {
+            return c;
         }
-
-        return null;
     }
+    return null;
+}
 
     public static boolean isDuplicateCustomer(String username, String email, ArrayList<Customer> customers) {
         for (Customer c : customers) {
@@ -321,4 +211,32 @@ public class Main {
         }
         return false;
     }
-}
+    
+    public static boolean isUsernameTaken(String username, ArrayList<Customer> customers) {
+        for (Customer c : customers) {
+            if (c.getUsername().equalsIgnoreCase(username)) return true;
+        }
+        return false;
+    }
+
+    public static boolean isEmailTaken(String email, ArrayList<Customer> customers) {
+        for (Customer c : customers) {
+            if (c.getEmail().equalsIgnoreCase(email)) return true;
+        }
+        return false;
+    }
+    
+    private static int getValidInt(Scanner sc, String prompt, int min, int max) {
+            while (true) {
+                System.out.print(prompt);
+                String input = sc.nextLine().trim();
+                try {
+                    int val = Integer.parseInt(input);
+                    if (val >= min && val <= max) return val;
+                    System.out.println("Out of range! (" + min + "-" + max + ")");
+                } catch (Exception e) {
+                    System.out.println("Invalid number format.");
+                }
+            }
+        }
+    }
