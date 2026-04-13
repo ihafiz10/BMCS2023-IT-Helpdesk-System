@@ -36,7 +36,9 @@ public class Ticket {
         return result.toString().trim();
     }
 
-    public Ticket(){};
+    public Ticket(){
+        this.status = "New";
+    };
     
     // Constructor (AUTO ID)
     public Ticket(String customerId, String description, String priority, String dateSubmitted) {
@@ -196,6 +198,11 @@ public class Ticket {
     public void setDescription(String description) {
         this.description = description;
     }
+    
+    public void setCustomerId(String id) { this.customerId = id; }
+    public void setPriority(String pri) { this.priority = pri; }
+    public void setDateSubmitted(String date) { this.dateSubmitted = date; }
+
 
     // ================= METHODS =================
 
