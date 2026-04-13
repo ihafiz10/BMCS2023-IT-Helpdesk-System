@@ -1,0 +1,17 @@
+package Assignment;
+
+public class Manager extends User {
+    
+    private String managementLevel; 
+
+    public Manager() {}
+
+    public Manager(String userId, String username, String email, String password, String managementLevel) {
+        super(userId, username, email, password, "Manager", true, 
+              java.time.LocalDate.now().toString());
+        
+        this.managementLevel = managementLevel;
+    }
+
+    public String getManagementLevel() { return managementLevel; }
+}
