@@ -1,21 +1,14 @@
-package com.mycompany.assignment;
+package Assignment;
 
 public class Feedback {
     private String feedbackId;
     private String ticketId;
     private int rating;
     private String comment;
+    
+    public Feedback(){};
 
     public Feedback(String feedbackId, String ticketId, int rating, String comment) {
-        if (feedbackId == null || feedbackId.isEmpty()) {
-            throw new IllegalArgumentException("Feedback ID cannot be empty");
-        }
-        if (ticketId == null || ticketId.isEmpty()) {
-            throw new IllegalArgumentException("Ticket ID cannot be empty");
-        }
-        if (rating < 1 || rating > 5) {
-            throw new IllegalArgumentException("Rating must be between 1 and 5");
-        }
 
         this.feedbackId = feedbackId;
         this.ticketId = ticketId;
@@ -27,6 +20,12 @@ public class Feedback {
     public String getTicketId() { return ticketId; }
     public int getRating() { return rating; }
     public String getComment() { return comment; }
+    
+    public void setFeedbackId(String id) { this.feedbackId = id; }
+    public void setTicketId(String tid) { this.ticketId = tid; }
+    public void setRating(int rating) { this.rating = rating; }
+    public void setComment(String comment) { this.comment = comment; }
+
 
     @Override
     public String toString() {
