@@ -1,4 +1,4 @@
-package com.mycompany.assignment;
+package Assignment;
 
 public class User {
     private String userId;
@@ -35,7 +35,7 @@ public class User {
     }
 
     public void setUserId(String userId) {
-        if (userId != null && userId.toUpperCase().matches("^[a-zA-Z0-9]{9,}$")) {
+        if (userId != null && userId.toUpperCase().matches("^[a-zA-Z0-9]{2,}$")) {
             this.userId = userId.toUpperCase();
         } else {
             this.userId = "INVALID_ID";
@@ -47,12 +47,15 @@ public class User {
     }
 
     public void setUsername(String username) {
-        if (username != null && username.matches("^[a-zA-Z0-9_]{6,}$")) {
-            this.username = username;
-        } else {
-            this.username = "INVALID_USERNAME";
-        }
+    String strictRegex = "^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$";
+
+    if (username != null && username.matches(strictRegex) 
+        && username.length() >= 6 && username.length() <= 12) {
+        this.username = username;
+    } else {
+        this.username = "INVALID_USERNAME";
     }
+}
 
     public String getEmail() {
         return email;
