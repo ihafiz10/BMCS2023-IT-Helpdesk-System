@@ -94,7 +94,9 @@ public class ManagerModule {
                 
                 case 8 -> {
                     System.out.println("\n===== Register New Staff Member =====");
-
+                    
+                    Staff newStaff = new Staff();
+                    
                     String sName = service.getValidStringInput(sc, 
                             "Enter New Staff Username (or 0 to return): ", 
                             "^(?=.{4,12}$)[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$", 
@@ -119,7 +121,14 @@ public class ManagerModule {
                     String nextId = "S" + (staffList.size() + 1);
                     String nextUid = "U" + (staffList.size() + 101);
 
-                    Staff newStaff = new Staff(nextUid, sName, sEmail, sPass, nextId);
+                    newStaff.setUserId(nextUid);
+                    newStaff.setUsername(sName);
+                    newStaff.setEmail(sEmail);
+                    newStaff.setPassword(sPass);
+                    newStaff.setStaffID(nextId); 
+                    newStaff.setRole("Staff");
+                    newStaff.setActive(true);
+                    
                     staffList.add(newStaff);
 
                     System.out.println("\n New Staff Registered Successfully!");
@@ -129,6 +138,7 @@ public class ManagerModule {
                     pause(sc);
                     break;
                 }
+                
                 case 9 -> viewAllStaff(sc, staffList);
                 case 10 -> System.out.println("Exiting Manager Module...");
             }
