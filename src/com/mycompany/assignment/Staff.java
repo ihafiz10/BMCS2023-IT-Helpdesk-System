@@ -1,10 +1,10 @@
-package com.mycompany.assignment;
-
-import java.util.List;
+package Assignment;
 
 public class Staff extends User {
 
     private String staffID;
+    
+    public Staff(){};
 
     public Staff(String userId, String username, String email, String password, String staffID) {
         super(userId, username, email, password, "Staff", true,
@@ -12,25 +12,9 @@ public class Staff extends User {
         this.staffID = staffID;
     }
 
-    public String getStaffID() {
-        return staffID;
-    }
+    public String getStaffID() {return staffID;}
 
-    public boolean login(String username, String password) {
-        return validateLogin(username, password);
-    }
-
-    public void viewAllTickets(List<Ticket> tickets) {
-        if (tickets.isEmpty()) {
-            System.out.println("No tickets found.");
-            return;
-        }
-
-        for (Ticket t : tickets) {
-            System.out.println(t);
-            System.out.println("----------------------------");
-        }
-    }
+    public boolean login(String username, String password) {return validateLogin(username, password);}
 
     public void respondTicket(Ticket t, String response) {
         if (t.addResponse(response)) {
