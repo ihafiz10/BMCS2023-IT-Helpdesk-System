@@ -1,0 +1,202 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package Assignment;
+
+/**
+ *
+ * @author user
+ */
+
+import java.util.ArrayList;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.util.Scanner;
+
+public class DataRepository {
+
+    public void saveCustomers(ArrayList<Customer> customers) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("customers.txt")))) {
+            for (Customer c : customers) {
+                out.println(c.getCustomerId() + "|" + 
+                            c.getUsername() + "|" + 
+                            c.getEmail() + "|" + 
+                            c.getPassword());
+            }
+            System.out.println("Customer data saved successfully.");
+        } catch (IOException e) {
+            System.err.println("Error saving customers: " + e.getMessage());
+        }
+    }
+
+    public void loadCustomers(ArrayList<Customer> customers) {
+        File file = new File("customers.txt");
+        if (!file.exists()) return; 
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            int maxId = 0;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|"); 
+                if (parts.length == 4) {
+                    Customer c = new Customer(parts[1], parts[2], parts[3]);
+                    customers.add(c);
+                    
+                    int idNum = Integer.parseInt(parts[0].replace("CUS", ""));
+                    if (idNum > maxId) maxId = idNum;
+                }
+            }
+            Customer.setCounter(maxId + 1);
+        } catch (IOException e) {
+            System.err.println("Error loading customers: " + e.getMessage());
+        }
+    }
+    
+    public void saveTickets(ArrayList<Ticket> ticketList) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("tickets.txt")))) {
+            for (Ticket t : ticketList) {
+                String historyStr = String.join(";", t.getResponses());
+                if (historyStr.isEmpty()) historyStr = "NONE";
+
+                String rTime = (t.getResolutionTime() != null) ? t.getResolutionTime().toString() : "NULL";
+
+                // ID|CustomerID|StaffId|Desc|Priority|Status|Date|History|Creation|Resolution|Rating
+                out.println(
+                    t.getTicketId() + "|" +
+                    t.getCustomerId() + "|" +
+                    t.getAssignedStaffId() + "|" +
+                    t.getDescription() + "|" +
+                    t.getPriority() + "|" +
+                    t.getStatus() + "|" +
+                    t.getDateSubmitted() + "|" +
+                    historyStr + "|" +
+                    t.getCreationTime().toString() + "|" +
+                    rTime + "|" +
+                    t.getRating()
+            );
+            }
+            System.out.println("Ticket data saved.");
+        } catch (IOException e) {
+            System.out.println("Save error: " + e.getMessage());
+        }
+    }
+    
+    //Load Ticket from tickets.txt
+    public void loadTicketsFromFile(ArrayList<Ticket> tickets) {
+        File file = new File("tickets.txt");
+        if (!file.exists()) return;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            int maxId = 0;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split("\\|");
+                if (data.length == 11) { 
+
+                    Ticket t = new Ticket(data[1], data[3], data[4], data[6]); 
+
+                    t.setTicketId(data[0]); 
+                    t.setAssignedStaffId(data[2]);
+                    t.setStatus(data[5]);
+
+                    if (!data[7].equals("NONE")) {
+                        String[] resArray = data[7].split(";");
+                        for (String res : resArray) {
+                            t.getResponses().add(res);
+                        }
+                    }
+                    
+                    if (!data[8].equals("NULL")) {
+                        t.setCreationTime(LocalDateTime.parse(data[8]));
+                    }
+
+                    if (!data[9].equals("NULL")) {
+                        t.setResolutionTime(LocalDateTime.parse(data[9]));
+                    }
+                
+                    t.setRating(Integer.parseInt(data[10]));
+                    
+                    tickets.add(t);
+                    
+                    int idNum = Integer.parseInt(data[0].replace("T", ""));
+                    if (idNum > maxId) maxId = idNum;
+                    }
+                }
+                Ticket.setCounter(maxId+1);
+            } catch (Exception e) {
+                System.out.println("Load tickets failed: " + e.getMessage());
+            }
+     }
+    
+    
+    public void saveFeedback(ArrayList<Feedback> list) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("feedback.txt")))) {
+            for (Feedback f : list) {
+                out.println(f.getFeedbackId() + "|" + f.getTicketId() + "|" + f.getRating() + "|" + f.getComment());
+            }
+            System.out.println("Feedback data saved successfully.");
+        } catch (IOException e) {
+            System.out.println("Error saving all feedbacks: " + e.getMessage());
+        }
+    }
+
+    public void loadFeedbacksFromFile(ArrayList<Feedback> feedbacks) {
+        File file = new File("feedback.txt");
+        if (!file.exists()) return;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split("\\|");
+                if (data.length == 4) {
+                    feedbacks.add(new Feedback(data[0], data[1], Integer.parseInt(data[2]), data[3]));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading feedback file.");
+        }
+    }
+    
+    public void saveStaffs(ArrayList<Staff> staffList) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("staff.txt"))) {
+            for (Staff s : staffList) {
+                //userId|username|email|password|staffId
+                writer.println(s.getUserId() + "|" +
+                               s.getUsername() + "|" +
+                               s.getEmail() + "|" +
+                               s.getPassword() + "|" +
+                               s.getStaffID());
+            }
+            System.out.println("Staff data saved successfully."); 
+        } catch (IOException e) {
+            System.out.println("Error saving staffs: " + e.getMessage());
+        }
+    }
+
+    public void loadStaffs(ArrayList<Staff> staffList) {
+        File file = new File("staff.txt");
+        if (!file.exists()) return; 
+        
+        staffList.clear();
+
+        try (Scanner reader = new Scanner(file)) {
+            while (reader.hasNextLine()) {
+                String line = reader.nextLine();
+                if (line.trim().isEmpty()) continue;
+
+                String[] parts = line.split("\\|");
+                if (parts.length == 5) {
+                    Staff s = new Staff(parts[0], parts[1], parts[2], parts[3], parts[4]);
+                    staffList.add(s);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Staff file not found, starting fresh.");
+        }
+    }
+}  
+
+    
+
+
