@@ -1,0 +1,180 @@
+package Assignment;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class ManagerModule {
+
+    private void pause(Scanner sc) {
+        System.out.print("\nPress ENTER to return to Manager Menu...");
+        sc.nextLine();
+    }
+
+    public void run(Scanner sc, TicketService service, DataRepository repo, ArrayList<Staff> staffList) {
+        TicketManager managerLogic = new TicketManager();
+        managerLogic.setTicketList(service.getTickets());
+        int mChoice = 0;
+
+        do {
+            System.out.println("\n====================== Manager Guidelines =======================");
+            System.out.println("1. Monitor overall ticket status and workload.");
+            System.out.println("2. Identify critical tickets (High priority/Overdue).");
+            System.out.println("3. Assign tickets to staff members.");
+            System.out.println("4. Closed tickets cannot be reassigned.");
+            System.out.println("5. Review feedback and system performance.");
+            System.out.println("=================================================================");
+
+            System.out.println("\n---  Manager Menu ---");
+            System.out.println("1. Monitor Dashboard      2. Critical Tickets");
+            System.out.println("3. Monthly Report         4. Staff Performance");
+            System.out.println("5. View Feedbacks         6. View All Tickets");
+            System.out.println("7. Assign Ticket          8. Register New Staff");
+            System.out.println("9. View All Staff        10. Exit Manager Module");
+            
+            mChoice = getValidInt(sc, "Choice (1-10): ", 1, 10);
+
+            switch (mChoice) {
+                case 1 -> { managerLogic.monitorTicketStatus(); pause(sc); }
+                case 2 -> { managerLogic.identifyCriticalTickets(); pause(sc); }
+                
+                case 3 -> {
+                    int year = getValidInt(sc, "Enter Year (e.g. 2026): ", 2020, 2026);
+                    int month = getValidInt(sc, "Enter Month (1-12): ", 1, 12);
+                    managerLogic.generateMonthlyTicketReport(year, month);
+                    pause(sc);
+                }
+                
+                case 4 -> { managerLogic.displayStaffPerformance(); pause(sc); }
+                case 5 -> { service.viewAllFeedback(); pause(sc); }
+                case 6 -> { service.viewAllTicketsFiltered(sc, service.getTickets()); }
+                
+                case 7 -> {
+                    System.out.println("\n===== Assign Ticket to Staff =====");
+                    
+                    while(true){
+                    String tid = service.getValidStringInput(sc, 
+                            "Enter Ticket ID to assign (or 0 to cancel): ", 
+                            "^[a-zA-Z0-9]+$", 
+                            "Invalid format! Only letters and numbers are allowed.");
+
+                    if (tid.equals("0")) {
+                        System.out.println("Returning to Manager Menu...");
+                        break; 
+                    }
+                        Ticket target = service.findTicketById(tid);
+
+                        if (target == null) {
+                            System.out.println("Ticket ID '" + tid + "' does not exist!");
+                            continue;
+                        }
+                        
+                        if (target.getStatus().equalsIgnoreCase("Closed")) {
+                            System.out.println("Closed tickets cannot be reassigned.");
+                            continue;
+                        } 
+                        
+                        String sid = service.getValidStringInput(sc, 
+                            "Enter Staff ID to handle this (S1-S4 | or 0 to cancel this assignment): ", 
+                            "^[sS][1-4]$" , 
+                            "Invalid Staff ID! Please use S1, S2, S3, or S4.");
+
+                            if (sid.equals("0")) {
+                            System.out.println("Assignment cancelled. You can try a different Ticket ID.");
+                            continue; 
+                        }
+                        target.setStaffId(sid.toUpperCase()); 
+                        System.out.println("\nTicket " + tid + " is now assigned to " + sid + ".");
+
+                        repo.saveTickets(service.getTickets());
+
+                        break;
+                }
+                    pause(sc);
+                }
+                
+                case 8 -> {
+                    System.out.println("\n===== Register New Staff Member =====");
+
+                    String sName = service.getValidStringInput(sc, 
+                            "Enter New Staff Username (or 0 to return): ", 
+                            "^(?=.{4,12}$)[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$", 
+                            "Username must be 4-12 alphanumeric characters.");
+                    if (sName.equals("0")) break;
+                    
+                    String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+                    String sEmail = service.getValidStringInput(sc, 
+                            "Enter Staff Email (or 0 to cancel): ", 
+                            emailRegex, "Invalid email format!");
+                    
+                    if (isEmailTaken(sEmail, staffList)) { 
+                        System.out.println("This email is already registered. Please use another one.");
+                        continue; 
+                    }
+
+                    String sPass = service.getValidStringInput(sc, 
+                            "Enter Password (min 9 chars): ", 
+                            "^.{9,}$", 
+                            "Password is too short (min 9).");
+
+                    String nextId = "S" + (staffList.size() + 1);
+                    String nextUid = "U" + (staffList.size() + 101);
+
+                    Staff newStaff = new Staff(nextUid, sName, sEmail, sPass, nextId);
+                    staffList.add(newStaff);
+
+                    System.out.println("\n New Staff Registered Successfully!");
+                    System.out.println("Staff ID: " + nextId + " | Name: " + sName + " | Email: " + sEmail);
+
+                    repo.saveStaffs(staffList);
+                    pause(sc);
+                    break;
+                }
+                case 9 -> viewAllStaff(sc, staffList);
+                case 10 -> System.out.println("Exiting Manager Module...");
+            }
+        } while (mChoice != 10);
+    }
+    private int getValidInt(Scanner sc, String prompt, int min, int max) {
+        while (true) {
+            System.out.print(prompt);
+            String input = sc.nextLine().trim();
+            try {
+                int val = Integer.parseInt(input);
+                if (val >= min && val <= max) return val;
+                System.out.println("Out of range (" + min + "-" + max + ")");
+            } catch (Exception e) {
+                System.out.println("Invalid format.");
+            }
+        }
+    }
+    
+    private void viewAllStaff(Scanner sc, ArrayList<Staff> staffList) {
+    if (staffList.isEmpty()) {
+        System.out.println("\n[!] No staff members registered in the system.");
+        return;
+    }
+
+    System.out.println("\n==========================================================");
+    System.out.println("                      STAFF DIRECTORY                     ");
+    System.out.println("==========================================================");
+    System.out.printf("%-10s | %-15s | %-25s\n", "STAFF ID", "NAME", "EMAIL");
+    System.out.println("----------------------------------------------------------");
+
+    for (Staff s : staffList) {
+        System.out.printf("%-10s | %-15s | %-25s\n", 
+            s.getStaffID(), 
+            s.getUsername(), 
+            s.getEmail());
+    }
+    System.out.println("==========================================================\n");
+    pause(sc);
+}
+    
+    public static boolean isEmailTaken(String email, ArrayList<Staff> staffList) {
+        for (Staff s : staffList) {
+            if (s.getEmail().equalsIgnoreCase(email)) return true;
+        }
+        return false;
+    }
+}
+
