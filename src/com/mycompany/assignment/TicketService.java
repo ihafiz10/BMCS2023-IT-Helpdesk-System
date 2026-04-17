@@ -304,14 +304,16 @@ public class TicketService {
         while(true){
             System.out.println("\n=============== Select Time Range ================");
             System.out.println("1. All Time");
-            System.out.println("2. Specific Month");
+            System.out.println("2. Specific Time");
             System.out.println("3. Return to Previous Portal");
             int scopeChoice = getValidIntInput(sc, "Choice: ", 1, 3);
 
             if (scopeChoice == 3) {break;}
 
+            int targetYear = 0;
             int targetMonth = 0;
             if (scopeChoice == 2) {
+                targetYear = getValidIntInput(sc, "Enter Year: ", 2020, 2030);
                 targetMonth = getValidIntInput(sc, "Enter month (1-12): ", 1, 12);
             }
 
@@ -328,7 +330,7 @@ public class TicketService {
             System.out.println("\n============================= FILTERED RESULTS =============================");
 
             for (Ticket t : tickets) {
-                boolean monthMatch = (scopeChoice == 1 || t.getCreationTime().getMonthValue() == targetMonth);                // 2. 检查状态是否匹配 (注意：这里必须是 boolean)
+                boolean monthMatch = (scopeChoice == 1 || t.getCreationTime().getYear() == targetYear && t.getCreationTime().getMonthValue() == targetMonth);                // 2. 检查状态是否匹配 (注意：这里必须是 boolean)
                 boolean statusMatch = switch (statusChoice) {
                     case 1 -> true;
                     case 2 -> t.getStatus().equalsIgnoreCase("Open");
