@@ -18,13 +18,13 @@ public class ManagerModule {
         do {
             System.out.println("\n====================== Manager Guidelines =======================");
             System.out.println("1. Monitor overall ticket status and workload.");
-            System.out.println("2. Identify critical tickets (High priority/Overdue).");
+            System.out.println("2. Identify critical tickets.");
             System.out.println("3. Assign tickets to staff members.");
-            System.out.println("4. Closed tickets cannot be reassigned.");
+            System.out.println("4. Review monthly perfomance reports and statistics.");
             System.out.println("5. Review feedback and system performance.");
             System.out.println("=================================================================");
 
-            System.out.println("\n---  Manager Menu ---");
+            System.out.println("\n=====  Manager Menu =====");
             System.out.println("1. Monitor Dashboard      2. Critical Tickets");
             System.out.println("3. Monthly Report         4. Staff Performance");
             System.out.println("5. View Feedbacks         6. View All Tickets");
@@ -44,7 +44,11 @@ public class ManagerModule {
                     pause(sc);
                 }
                 
-                case 4 -> { managerLogic.displayStaffPerformance(); pause(sc); }
+                case 4 -> { 
+                    int year = getValidInt(sc, "Enter Year (e.g. 2026): ", 2020, 2026);
+                    int month = getValidInt(sc, "Enter Month (1-12): ", 1, 12);
+                    managerLogic.displayStaffPerformance(year, month, staffList); pause(sc);
+                }
                 case 5 -> { service.viewAllFeedback(); pause(sc); }
                 case 6 -> { service.viewAllTicketsFiltered(sc, service.getTickets()); }
                 
@@ -74,20 +78,31 @@ public class ManagerModule {
                         } 
                         
                         String sid = service.getValidStringInput(sc, 
-                            "Enter Staff ID to handle this (S1-S4 | or 0 to cancel this assignment): ", 
-                            "^[sS][1-4]$" , 
-                            "Invalid Staff ID! Please use S1, S2, S3, or S4.");
+                        "Enter Staff ID to handle this (e.g. S1, S5 | or 0 to cancel): ", 
+                        "^[sS]\\d+$" ,
+                        "Invalid format! Please enter a valid Staff ID (e.g., S1).");
 
                             if (sid.equals("0")) {
                             System.out.println("Assignment cancelled. You can try a different Ticket ID.");
                             continue; 
                         }
-                        target.setStaffId(sid.toUpperCase()); 
-                        System.out.println("\nTicket " + tid + " is now assigned to " + sid + ".");
-
-                        repo.saveTickets(service.getTickets());
-
-                        break;
+                            
+                            boolean staffExists = false;
+                                for (Staff s : staffList) {
+                                    if (s.getStaffID().equalsIgnoreCase(sid)) {
+                                        staffExists = true;
+                                        break;
+                                    }
+                                }
+                                
+                                if (staffExists) {
+                                    target.setStaffId(sid.toUpperCase()); 
+                                    System.out.println("\nTicket " + tid + " is now assigned to " + sid.toUpperCase() + ".");
+                                    repo.saveTickets(service.getTickets());
+                                    break; 
+                                } else {
+                                    System.out.println("Staff ID '" + sid + "' not found in directory!");
+                                                }
                 }
                     pause(sc);
                 }
@@ -101,23 +116,37 @@ public class ManagerModule {
                             "Enter New Staff Username (or 0 to return): ", 
                             "^(?=.{4,12}$)[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$", 
                             "Username must be 4-12 alphanumeric characters.");
-                    if (sName.equals("0")) break;
+    
+                    if (sName.equals("0")|| sName.equals("INVALID_PASSWORD")) break;
                     
+                    String sEmail;
                     String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
-                    String sEmail = service.getValidStringInput(sc, 
-                            "Enter Staff Email (or 0 to cancel): ", 
-                            emailRegex, "Invalid email format!");
-                    
-                    if (isEmailTaken(sEmail, staffList)) { 
-                        System.out.println("This email is already registered. Please use another one.");
-                        continue; 
-                    }
+                    while(true){
+                        sEmail = service.getValidStringInput(sc, 
+                                "Enter Staff Email (or 0 to cancel): ", 
+                                emailRegex, "Invalid email format!");
 
+                        if (sEmail.equals("0")|| sEmail.equals("INVALID_PASSWORD")) break;
+
+                        if (isEmailTaken(sEmail, staffList)) { 
+                            System.out.println("This email is already registered. Please use another one.");
+                        } else{
+                            break;
+                        }
+                    }
+                    
+                    if (sEmail.equals("0")|| sEmail.equals("INVALID_PASSWORD")) break;
+                    
                     String sPass = service.getValidStringInput(sc, 
                             "Enter Password (min 9 chars): ", 
                             "^.{9,}$", 
                             "Password is too short (min 9).");
-
+                    
+                    if (sPass.equals("0") || sPass.equals("INVALID_PASSWORD")) {
+                        System.out.println("Registration cancelled. Returning to Manager Menu...");
+                        break;
+                    }
+                    
                     String nextId = "S" + (staffList.size() + 1);
                     String nextUid = "U" + (staffList.size() + 101);
 
@@ -131,7 +160,7 @@ public class ManagerModule {
                     
                     staffList.add(newStaff);
 
-                    System.out.println("\n New Staff Registered Successfully!");
+                    System.out.println("\nNew Staff Registered Successfully!");
                     System.out.println("Staff ID: " + nextId + " | Name: " + sName + " | Email: " + sEmail);
 
                     repo.saveStaffs(staffList);
