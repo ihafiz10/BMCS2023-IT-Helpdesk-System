@@ -69,12 +69,16 @@ public class CustomerModule {
                     };
                         String finalDesc = "[" + category + "] " + desc;
                         
-                        Ticket t = new Ticket(
-                                customer.getCustomerId(),
-                                finalDesc,
-                                pri,
-                                java.time.LocalDate.now().toString()
-                        );
+                        Ticket t = new Ticket();
+                        String nextTid = "T" + (service.getTickets().size() + 1); 
+t.                      setTicketId(nextTid);
+
+                        t.setCustomerId(customer.getCustomerId());
+                        t.setDescription(finalDesc);
+                        t.setPriority(pri);
+                        t.setDateSubmitted(java.time.LocalDate.now().toString());
+                        t.setStatus("Open");
+                        
                         service.createTicket(t);
                         repo.saveTickets(service.getTickets());
                         pause(sc);
@@ -161,7 +165,12 @@ public class CustomerModule {
                     if (inputComment.isEmpty()) inputComment = "No comment provided";
                     
                     String feedbackId = "F" + feedbackTicketId.substring(1);
-                        Feedback feedback = new Feedback(feedbackId, feedbackTicketId, rating, inputComment);
+                        Feedback feedback = new Feedback();
+                        feedback.setFeedbackId(feedbackId);
+                        feedback.setTicketId(feedbackTicketId);
+                        feedback.setRating(rating);
+                        feedback.setComment(inputComment);
+                        
                         service.addFeedback(feedback);
                         repo.saveFeedback(service.getFeedbackList());
                         System.out.println("Thank you for your feedback!");
