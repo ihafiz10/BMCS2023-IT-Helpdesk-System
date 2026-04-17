@@ -37,8 +37,20 @@ public class Ticket {
     }
 
     public Ticket(){
-        this.status = "New";
-    };
+        this.ticketId = "";
+        this.customerId = "";
+        this.assignedStaffId = "Not Assigned"; 
+        this.description = "";
+        this.priority = "";
+        this.status = "Open";
+        this.dateSubmitted = "";
+        this.response = "NONE";  
+        this.responses = new ArrayList<>();
+        this.creationTime = LocalDateTime.now(); 
+        this.resolutionTime = null;  
+        this.rating = 0;
+    }
+    
     
     // Constructor (AUTO ID)
     public Ticket(String customerId, String description, String priority, String dateSubmitted) {
@@ -174,9 +186,7 @@ public class Ticket {
     public void setRating(int rating) {
         if (rating >= 1 && rating <= 5) {
             this.rating = rating;
-        } else {
-            System.out.println("Rating must be between 1 and 5.");
-        }
+        } 
     }
     
     public static void setCounter(int newCounter) {
@@ -219,7 +229,8 @@ public class Ticket {
  @Override
 public String toString() {
     String staffDisplay = (assignedStaffId == null || assignedStaffId.isEmpty()) ? "Unassigned" : assignedStaffId;
-
+    String historyDisplay = responses.isEmpty() ? "No responses yet." : String.join("\n          - ", responses);
+    
     return """
         ============================== TICKET DETAILS ==============================
           Ticket ID        : %s
