@@ -20,6 +20,12 @@ public class Feedback {
     public String getTicketId() { return ticketId; }
     public int getRating() { return rating; }
     public String getComment() { return comment; }
+    
+    public void setFeedbackId(String id) { this.feedbackId = id; }
+    public void setTicketId(String tid) { this.ticketId = tid; }
+    public void setRating(int rating) { this.rating = rating; }
+    public void setComment(String comment) { this.comment = comment; }
+
 
     @Override
     public String toString() {
