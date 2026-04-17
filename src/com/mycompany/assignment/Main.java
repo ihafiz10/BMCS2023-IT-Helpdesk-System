@@ -119,7 +119,8 @@ public class Main {
         do {
 
             System.out.println("\n====================== Customer Guidelines ======================");
-            System.out.println("1. Sign up to create a new account.");
+            System.out.println("1. Sign up to create a new account"
+                    + ".");
             System.out.println("2. Sign in using your username and password.");
             System.out.println("3. Create tickets by entering description and priority.");
             System.out.println("4. View your tickets to check status and responses.");
@@ -154,23 +155,31 @@ public class Main {
 
                 case 2 -> {
                     System.out.println("\n===== Customer Sign Up =====");
-                    String signUpUsername = "";
                     
                     while(true){
                         String user = service.getValidStringInput(sc, "Enter username (6-12 chars): ", "^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$", "6-12 alphanumeric characters only.");
+                        if (user.equals("0")|| user.equals("INVALID_PASSWORD")) break;
                         
-                        if (user.equals("0")) break;
                         if (isUsernameTaken(user, customers)) {
                             System.out.println("Username already taken!"); continue;
                         }
                         
                         String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
                         String email = service.getValidStringInput(sc, "Enter email: ", emailRegex, "Invalid email format!");
+                        if (email.equals("0") || email.equals("INVALID_PASSWORD")) {
+                            System.out.println("Sign up cancelled. Returning to portal...");
+                            break;
+                        }
+                        
                         if (isEmailTaken(email, customers)) {
                             System.out.println("Email already registered!"); continue;
                         }
                         
                         String pass = service.getValidStringInput(sc, "Enter password (min 9 chars): ", "^.{9,}$", "Min. 9 characters required.");
+                        if (pass.equals("0") || pass.equals("INVALID_PASSWORD")) {
+                            System.out.println("Sign up cancelled. Returning to portal...");
+                            break; 
+                        }
                         
                         Customer newCustomer = new Customer(user, email, pass);
                         customers.add(newCustomer);
@@ -181,10 +190,10 @@ public class Main {
                         sc.nextLine();
                         
                         new CustomerModule().run(sc, service, newCustomer, repo);
-                        
                         break;
                     }
                 }
+                
                 case 3 -> System.out.println("Exiting Customer Portal...");
                 default -> System.out.println("Invalid choice.");
             }
