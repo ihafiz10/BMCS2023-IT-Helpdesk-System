@@ -166,9 +166,9 @@ public class TicketManager {
         }
     }
 
-    System.out.println("\n========================================================");
+    System.out.println("\n===================================================================");
     System.out.printf("           PERFORMANCE REPORT - %02d/%d\n", month, year);
-    System.out.println("========================================================");
+    System.out.println("===================================================================");
     
     if (total == 0) {
         System.out.println("          No data available for this period.");
@@ -179,7 +179,7 @@ public class TicketManager {
         System.out.printf("%-25s : %d\n", "Still Outstanding", (total - resolved));
         System.out.printf("%-25s : %.1f%%\n", "Monthly Resolution Rate", rate);
         
-        System.out.println("--------------------------------------------------------");
+        System.out.println("------------------------------------------------------------------");
 
         System.out.println("CATEGORY BREAKDOWN:");
         System.out.printf("  - Hardware        : %d\n", hardwareCount);
@@ -189,30 +189,37 @@ public class TicketManager {
         System.out.printf("  - Others          : %d\n", othersCount);
     }
     
-    System.out.println("========================================================\n");
+    System.out.println("==================================================================\n");
 }
 
     // Performance
-    public void displayStaffPerformance() {
-    System.out.println("\n================================================================");
+    public void displayStaffPerformance(int targetYear, int targetMonth, ArrayList<Staff> staffList) {
+    System.out.println("\n=====================================================================================");
     System.out.println("              STAFF PERFORMANCE ANALYSIS ");
-    System.out.println("================================================================");
-    System.out.printf("%-10s | %-12s | %-15s | %-15s\n", "STAFF ID", "TICKETS", "AVG RESP TIME", "EFFICIENCY");
-    System.out.println("----------------------------------------------------------------");
+    System.out.println("=====================================================================================");
+    System.out.printf("%-10s | %-20s | %-10s | %-18s | %-12s\n", 
+                  "STAFF ID", "NAME", "TICKETS", "AVG RESP TIME", "EFFICIENCY");
+    System.out.println("------------------------------------------------------------------------------------");
 
 
-    String[] staffIds = {"S1", "S2", "S3", "S4"};
+    for (Staff staff : staffList) {
+        String sid = staff.getStaffID();
+        String sName = staff.getUsername();
 
-    for (String sid : staffIds) {
         long totalMinutes = 0;
         int resolvedCount = 0;
         int totalAssigned = 0;
 
         for (Ticket t : ticketList) {
-            if (t.getAssignedStaffId() != null && t.getAssignedStaffId().equalsIgnoreCase(sid)) {
+            
+            boolean isStaffMatch = t.getAssignedStaffId() != null && t.getAssignedStaffId().equalsIgnoreCase(sid);
+            boolean isYearMatch = t.getCreationTime().getYear() == targetYear;
+            boolean isMonthMatch = t.getCreationTime().getMonthValue() == targetMonth;
+            
+            if (isStaffMatch && isYearMatch && isMonthMatch) {
                 totalAssigned++;
-
-                if (t.getResolutionTime() != null) {
+            
+            if (t.getResolutionTime() != null) {
                     Duration d = Duration.between(t.getCreationTime(), t.getResolutionTime());
                     totalMinutes += d.toMinutes();
                     resolvedCount++;
@@ -221,17 +228,26 @@ public class TicketManager {
         }
 
         if (totalAssigned > 0) {
-            String avgTimeStr = (resolvedCount > 0) ? (totalMinutes / resolvedCount) + " mins" : "N/A";
+            String avgTimeStr;
+            if (resolvedCount > 0) {
+                long avgMins = totalMinutes / resolvedCount;
+                long d = avgMins / 1440;
+                long h = (avgMins % 1440) / 60;
+                long m = avgMins % 60;
+                avgTimeStr = (d > 0 ? d + "d " : "") + (h > 0 || d > 0 ? h + "h " : "") + m + "m";
+            } else {
+                avgTimeStr = "Pending";
+            }
+
             double solveRate = ((double) resolvedCount / totalAssigned) * 100;
-            
-            System.out.printf("%-10s | %-12d | %-15s | %.1f%%\n", 
-                              sid, totalAssigned, avgTimeStr, solveRate);
+            System.out.printf("%-10s | %-20s | %-10s | %-18s | %-12s\n", 
+                              sid, sName, totalAssigned, avgTimeStr, solveRate);
         } else {
-            System.out.printf("%-10s | %-12s | %-15s | %-15s\n", 
-                              sid, "0", "No Task", "0.0%");
+            System.out.printf("%-10s | %-20s | %-10s | %-18s | %-12s\n", 
+                              sid, sName, "0", "No Task", "0.0%");
         }
     }
-    System.out.println("================================================================\n");
+    System.out.println("====================================================================================\n");
 }
 
     // Feedback view
